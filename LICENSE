@@ -1,0 +1,136 @@
+LICENCJA ZAMKNIĘTA (PROPRIETARY LICENSE) — WSZELKIE PRAWA ZASTRZEŻONE
+Copyright (c) 2026 Andrzej Bowsunowski
+
+Oprogramowanie LuminaPHP zostało stworzone przez Andrzeja Bowsunowskiego
+przy wykorzystaniu narzędzi wspomagających opartych na sztucznej inteligencji
+(Claude, Anthropic). Całość praw autorskich do Oprogramowania przysługuje
+wyłącznie Andrzejowi Bowsunowskiemu. Narzędzia AI użyte podczas tworzenia
+nie posiadają praw autorskich ani żadnych innych praw do Oprogramowania.
+
+================================================================================
+
+DEFINICJE
+
+„Oprogramowanie" oznacza całość kodu źródłowego, kodu wynikowego, plików
+konfiguracyjnych, zasobów, dokumentacji oraz wszelkich materiałów towarzyszących
+projektowi LuminaPHP, w tym każdy jego fragment, moduł lub komponent —
+niezależnie od formy, w jakiej zostały udostępnione.
+
+================================================================================
+
+WARUNKI LICENCJI
+
+1. WŁASNOŚĆ
+   Niniejsze Oprogramowanie, jego kod źródłowy, struktura, projekt graficzny
+   oraz wszelkie powiązane materiały są wyłączną własnością Andrzeja Bowsunowskiego.
+   Wszelkie prawa zastrzeżone.
+
+2. ZAKAZ KOPIOWANIA I DYSTRYBUCJI
+   Kopiowanie, powielanie, dystrybuowanie lub udostępnianie całości lub jakiejkolwiek
+   części Oprogramowania — włącznie z pojedynczymi fragmentami kodu, modułami
+   i komponentami — w jakiejkolwiek formie i w jakimkolwiek celu, jest surowo
+   zabronione bez uprzedniej, pisemnej zgody właściciela.
+
+3. ZAKAZ UŻYTKOWANIA
+   Jakiekolwiek używanie Oprogramowania lub jego fragmentów, w tym uruchamianie,
+   wykonywanie, testowanie, integrowanie z innym oprogramowaniem lub wykorzystanie
+   w jakimkolwiek projekcie, jest zabronione bez uprzedniej, pisemnej zgody
+   właściciela.
+
+4. ZAKAZ MODYFIKACJI
+   Modyfikowanie, adaptowanie, tłumaczenie, dekompilowanie, dezasemblowanie
+   lub tworzenie dzieł pochodnych na podstawie Oprogramowania lub jego
+   jakiejkolwiek części jest zabronione.
+
+5. BRAK UDZIELENIA LICENCJI
+   Udostępnienie kodu źródłowego nie stanowi udzielenia jakiejkolwiek licencji
+   ani prawa do korzystania z Oprogramowania. Wszelki dostęp do kodu — w tym
+   publiczny dostęp przez repozytoria (np. GitHub) — nie uprawnia do jego użycia,
+   kopiowania, modyfikowania ani dystrybucji. Publiczne udostępnienie repozytorium
+   nie oznacza zgody na używanie, kopiowanie ani modyfikowanie Oprogramowania.
+
+6. BRAK DOROZUMIANYCH PRAW
+   Żadne postanowienie niniejszej licencji nie może być interpretowane jako
+   dorozumiane udzielenie praw, licencji lub zgody na korzystanie z Oprogramowania
+   poza zakresem wyraźnie określonym przez właściciela.
+
+7. BRAK GWARANCJI
+   Oprogramowanie dostarczane jest „tak jak jest" (AS IS), bez jakiejkolwiek
+   gwarancji — jawnej ani dorozumianej — w tym bez gwarancji przydatności
+   do określonego celu, poprawności działania ani nienaruszania praw osób trzecich.
+   Właściciel nie ponosi odpowiedzialności za jakiekolwiek szkody wynikłe
+   z użycia lub niemożności użycia Oprogramowania.
+
+8. ODPOWIEDZIALNOŚĆ ZA NARUSZENIA
+   Nieautoryzowane użycie Oprogramowania może skutkować odpowiedzialnością
+   cywilną i karną zgodnie z obowiązującym prawem, w szczególności ustawą
+   z dnia 4 lutego 1994 r. o prawie autorskim i prawach pokrewnych
+   (Dz.U. 1994 nr 24 poz. 83 z późn. zm.).
+
+9. JURYSDYKCJA
+   Niniejsza licencja podlega prawu Rzeczypospolitej Polskiej. Wszelkie spory
+   wynikłe z jej stosowania będą rozstrzygane przez sądy właściwe dla miejsca
+   zamieszkania przedstawiciela ustawowego właściciela Oprogramowania.
+
+10. PRZEDSTAWICIEL USTAWOWY
+    Andrzej Bowsunowski jest osobą niepełnoletnią (ur. 2010, lat 15).
+    Zgodnie z art. 11 i nast. Kodeksu cywilnego, wszelką odpowiedzialność
+    prawną oraz reprezentację w sprawach związanych z niniejszą licencją
+    i Oprogramowaniem sprawuje jego przedstawiciel ustawowy (rodzic/opiekun):
+    Jan Bowsunowski.
+
+    Wszelka korespondencja prawna powinna być kierowana do przedstawiciela
+    ustawowego, który działa w imieniu i na rzecz twórcy Oprogramowania.
+
+11. KONTAKT
+    W sprawach licencjonowania prosimy o kontakt z przedstawicielem ustawowym:
+    Jan Bowsunowski (w imieniu Andrzeja Bowsunowskiego)
+
+================================================================================
+
+MATERIAŁY OSÓB TRZECICH
+
+Niniejsze Oprogramowanie korzysta z zasobów graficznych i usług podmiotów
+trzecich, które podlegają własnym warunkom licencyjnym:
+
+- Unsplash (https://unsplash.com)
+  Zdjęcia poglądowe salonów i kategorii pochodzą z serwisu Unsplash
+  i są udostępniane na licencji Unsplash License. Autorzy poszczególnych
+  fotografii zachowują swoje prawa autorskie.
+  Szczegóły: https://unsplash.com/license
+
+- Pravatar (https://pravatar.cc)
+  Zastępcze zdjęcia profilowe (avatary) pochodzą z serwisu Pravatar.
+  Szczegóły: https://pravatar.cc
+
+- Material Icons (Google LLC)
+  Ikony interfejsu użytkownika pochodzą z biblioteki Material Icons
+  udostępnionej przez Google na licencji Apache License 2.0.
+  Szczegóły: https://github.com/google/material-design-icons/blob/master/LICENSE
+
+Powyższe zasoby NIE są objęte niniejszą licencją własnościową i podlegają
+wyłącznie warunkom licencyjnym ich twórców.
+
+================================================================================
+
+WSZELKIE PRAWA ZASTRZEŻONE. ŻADNA CZĘŚĆ TEGO OPROGRAMOWANIA (Z WYŁĄCZENIEM
+ZASOBÓW OSÓB TRZECICH WYMIENIONYCH POWYŻEJ) NIE MOŻE BYĆ UŻYWANA, KOPIOWANA
+ANI ROZPOWSZECHNIANA BEZ PISEMNEJ ZGODY WŁAŚCICIELA.
+================================================================================
+
+ZAKAZ TWORZENIA FORKÓW
+
+Tworzenie forków repozytorium Oprogramowania bez uprzedniej pisemnej zgody
+właściciela jest zabronione.
+
+=========================================================================================== 
+
+ZMIANY LICENCJI
+
+Właściciel Oprogramowania zastrzega sobie prawo do zmiany treści niniejszej
+Licencji w dowolnym momencie.
+
+Aktualna wersja Licencji obowiązuje od momentu jej opublikowania wraz
+z Oprogramowaniem lub repozytorium.
+
+================================================================================
