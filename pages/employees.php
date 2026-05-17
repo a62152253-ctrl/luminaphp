@@ -143,7 +143,7 @@ $bizId = $_GET['id'] ?? '';
 
 <script>
 window.employeesPage = {
-  bizId: '<?= $bizId ?>',
+  bizId: <?= json_encode($bizId) ?>,
   selectedEmployee: null
 };
 
@@ -166,11 +166,19 @@ function closeEmployeeModal() {
 }
 
 function saveEmployee() {
-  // Implementation
+  const name = document.getElementById('empName')?.value.trim();
+  if (!name) {
+    alert('Podaj imię i nazwisko pracownika.');
+    return false;
+  }
   closeEmployeeModal();
+  return true;
 }
 
 function showEmployeeDetails(employeeId) {
-  // Implementation - populate details panel
+  if (!employeeId) { return null; }
+  const panel = document.getElementById('employeeDetailsPanel');
+  if (panel) panel.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  return employeeId;
 }
 </script>

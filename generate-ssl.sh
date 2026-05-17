@@ -15,14 +15,14 @@ echo "🔐 SSL Certificate Setup"
 echo "========================"
 
 # Create SSL directory if it doesn't exist
-if [ ! -d "$SSL_DIR" ]; then
+if [[ ! -d "$SSL_DIR" ]]; then
     mkdir -p "$SSL_DIR"
     chmod 700 "$SSL_DIR"
     echo "✓ Created SSL directory: $SSL_DIR"
 fi
 
 # Check if certificates already exist
-if [ -f "$CERT_FILE" ] && [ -f "$KEY_FILE" ]; then
+if [[ -f "$CERT_FILE" && -f "$KEY_FILE" ]]; then
     echo "⚠️  Certificates already exist at:"
     echo "   - $CERT_FILE"
     echo "   - $KEY_FILE"

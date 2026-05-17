@@ -13,56 +13,23 @@ import {
 
 export async function initSetup() {
   const user = window.App?.user;
-  if (!user) {
-    window.location.href = '/luminaphp/?page=auth';
-    return;
-  }
-  if (window.App?.role !== 'business') {
-    window.location.href = '/luminaphp/';
-    return;
-  }
+  if (!user) { window.location.href = '/luminaphp/?page=auth'; return; }
+  if (window.App?.role !== 'business') { window.location.href = '/luminaphp/'; return; }
 
   const bizId = window.App?.userDoc?.businessId || user.uid;
   try {
     const snap = await getDoc(doc(db, 'businesses', bizId));
     if (snap.exists()) {
-      const d = snap.data();
-      if (d.profileComplete) {
-        window.location.href = '/luminaphp/?page=admin';
-        return;
-      }
-      const nameEl = document.getElementById('setupName');
-      const catEl  = document.getElementById('setupCategory');
-      if (nameEl && d.name) nameEl.value = d.name;
-      if (catEl  && d.category) {
-        for (const opt of catEl.options) {
-          if (opt.text === d.category) { opt.selected = true; break; }
-        }
-      }
-      setValue('setupDesc', d.description || '');
-      setValue('setupPhone', d.phone || '');
-      setValue('setupNip', d.nip || '');
-      setValue('setupWebsite', d.website || '');
-      setValue('setupCity', d.city || '');
-      setValue('setupAddress', d.address || '');
-      setValue('setupPostal', d.postal || '');
-      setValue('setupPhoto', d.photoURL || '');
-      if (d.lat && d.lng) {
-        setValue('setupLat', d.lat);
-        setValue('setupLng', d.lng);
-      }
-      fillHours(d.hours || {});
-      setupDescCount(d.description || '');
-      setupNipCheck(d.nip || '');
-      updateLaunchChecklist();
+      if (snap.data().profileComplete) { window.location.href = '/luminaphp/?page=admin'; return; }
+      prefillSetupForm(snap.data());
     }
   } catch(e) { console.error('initSetup:', e); }
 
-  window.setupFinish   = () => finishSetup(bizId);
-  window.setupUseGPS   = () => useGPS();
+  window.setupFinish       = () => finishSetup(bizId);
+  window.setupUseGPS       = () => useGPS();
   window.setupValidateStep = validateStep;
-  window.setupNipCheck = setupNipCheck;
-  window.setupDescCount = setupDescCount;
+  window.setupNipCheck     = setupNipCheck;
+  window.setupDescCount    = setupDescCount;
   window.setupNormalizeUrl = normalizeUrlInput;
 
   ['setupName','setupCategory','setupCity','setupAddress','setupPhoto','setupOwnerConsent'].forEach(id => {
@@ -71,46 +38,73 @@ export async function initSetup() {
   });
 }
 
+function prefillSetupForm(d) {
+  const nameEl = document.getElementById('setupName');
+  const catEl  = document.getElementById('setupCategory');
+  if (nameEl && d.name) nameEl.value = d.name;
+  if (catEl && d.category) {
+    for (const opt of catEl.options) {
+      if (opt.text === d.category) { opt.selected = true; break; }
+    }
+  }
+  setValue('setupDesc', d.description || '');
+  setValue('setupPhone', d.phone || '');
+  setValue('setupNip', d.nip || '');
+  setValue('setupWebsite', d.website || '');
+  setValue('setupCity', d.city || '');
+  setValue('setupAddress', d.address || '');
+  setValue('setupPostal', d.postal || '');
+  setValue('setupPhoto', d.photoURL || '');
+  if (d.lat && d.lng) { setValue('setupLat', d.lat); setValue('setupLng', d.lng); }
+  fillHours(d.hours || {});
+  setupDescCount(d.description || '');
+  setupNipCheck(d.nip || '');
+  updateLaunchChecklist();
+}
+
 // ─── GPS BUTTON ───────────────────────────────────────────────────────────────
+
+function setGpsBtn(btn, state) {
+  if (!btn) return;
+  const states = {
+    loading:  { disabled: true,  html: '<span class="material-icons" style="animation:spin 1s linear infinite">sync</span> Pobieranie…' },
+    geocoding:{ disabled: true,  html: '<span class="material-icons" style="animation:spin 1s linear infinite">sync</span> Pobieranie adresu…' },
+    idle:     { disabled: false, html: '<span class="material-icons">my_location</span> Użyj lokalizacji GPS' },
+    done:     { disabled: false, html: '<span class="material-icons">check_circle</span> Lokalizacja GPS zapisana' },
+  };
+  const s = states[state];
+  btn.disabled = s.disabled;
+  btn.innerHTML = s.html;
+  if (state === 'done') btn.classList.add('geo-btn-success');
+}
 
 async function useGPS() {
   const btn = document.getElementById('setupGpsBtn');
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<span class="material-icons" style="animation:spin 1s linear infinite">sync</span> Pobieranie…';
-  }
+  setGpsBtn(btn, 'loading');
 
   const loc = await getUserLocation();
   if (!loc) {
     toast('Brak dostępu do lokalizacji. Adres zostanie użyty do geokodowania.', 'error');
-    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">my_location</span> Użyj lokalizacji GPS'; }
+    setGpsBtn(btn, 'idle');
     return;
   }
 
-  // Save coordinates
   document.getElementById('setupLat').value = loc.lat;
   document.getElementById('setupLng').value = loc.lng;
   setLocationStatus('GPS zapisany. Adres i współrzędne będą częścią profilu salonu.', true);
 
-  // Reverse geocode → autofill address fields
-  if (btn) btn.innerHTML = '<span class="material-icons" style="animation:spin 1s linear infinite">sync</span> Pobieranie adresu…';
-
+  setGpsBtn(btn, 'geocoding');
   const addr = await reverseGeocode(loc.lat, loc.lng);
   if (addr) {
     const cityEl    = document.getElementById('setupCity');
     const addressEl = document.getElementById('setupAddress');
     const postalEl  = document.getElementById('setupPostal');
-
     if (cityEl    && addr.city)    { cityEl.value    = addr.city;    highlight(cityEl);    }
     if (addressEl && addr.address) { addressEl.value = addr.address; highlight(addressEl); }
     if (postalEl  && addr.postal)  { postalEl.value  = addr.postal;  highlight(postalEl);  }
   }
 
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = '<span class="material-icons">check_circle</span> Lokalizacja GPS zapisana';
-    btn.classList.add('geo-btn-success');
-  }
+  setGpsBtn(btn, 'done');
   toast('Lokalizacja i adres uzupełnione');
   updateLaunchChecklist();
 }
@@ -205,19 +199,19 @@ function collectHours() {
   }));
 }
 
-function fillHours(hours) {
-  for (let i = 0; i < 7; i++) {
-    const row = hours[i] || {};
-    const closed = document.getElementById(`shClosed_${i}`);
-    const open = document.getElementById(`shOpen_${i}`);
-    const close = document.getElementById(`shClose_${i}`);
-    const times = document.getElementById(`shTimes_${i}`);
+function fillHourRow(row, i) {
+  const closed = document.getElementById(`shClosed_${i}`);
+  const open   = document.getElementById(`shOpen_${i}`);
+  const close  = document.getElementById(`shClose_${i}`);
+  const times  = document.getElementById(`shTimes_${i}`);
+  if (closed && typeof row.closed === 'boolean') closed.checked = row.closed;
+  if (open && row.open)   open.value  = row.open;
+  if (close && row.close) close.value = row.close;
+  if (times && closed)    times.style.opacity = closed.checked ? '.3' : '1';
+}
 
-    if (closed && typeof row.closed === 'boolean') closed.checked = row.closed;
-    if (open && row.open) open.value = row.open;
-    if (close && row.close) close.value = row.close;
-    if (times && closed) times.style.opacity = closed.checked ? '.3' : '1';
-  }
+function fillHours(hours) {
+  for (let i = 0; i < 7; i++) { fillHourRow(hours[i] || {}, i); }
 }
 
 function updateLaunchChecklist() {
@@ -241,6 +235,14 @@ function setChecklistState(key, done) {
   row.classList.toggle('complete', done);
   const icon = row.querySelector('.material-icons');
   if (icon) icon.textContent = done ? 'check_circle' : 'radio_button_unchecked';
+}
+
+async function checkNipUnique(nip, bizId) {
+  try {
+    const nipSnap = await getDocs(query(collection(db, 'businesses'), where('nip', '==', nip)));
+    const takenBy = nipSnap.docs.find(d => d.id !== bizId);
+    return takenBy ? 'Salon z tym NIP jest już zarejestrowany w systemie.' : null;
+  } catch(e) { return null; }
 }
 
 function setLocationStatus(text, ok = false) {
@@ -280,18 +282,10 @@ async function finishSetup(bizId) {
     return;
   }
 
-  // Check NIP uniqueness
   if (btn) btn.textContent = 'Weryfikacja NIP…';
-  try {
-    const nipSnap = await getDocs(query(collection(db, 'businesses'), where('nip', '==', nip)));
-    const takenBy = nipSnap.docs.find(d => d.id !== bizId);
-    if (takenBy) {
-      showSetupErr(btn, 'Salon z tym NIP jest już zarejestrowany w systemie.');
-      return;
-    }
-  } catch(e) { /* network error — allow proceeding */ }
+  const nipErr = await checkNipUnique(nip, bizId);
+  if (nipErr) { showSetupErr(btn, nipErr); return; }
 
-  // ─── Resolve coordinates ──────────────────────────────────────────────────
   let lat = parseFloat(document.getElementById('setupLat')?.value) || null;
   let lng = parseFloat(document.getElementById('setupLng')?.value) || null;
 
@@ -299,8 +293,7 @@ async function finishSetup(bizId) {
     if (btn) btn.textContent = 'Geokodowanie adresu…';
     const coords = await geocodeAddress(city, address);
     if (coords) {
-      lat = coords.lat;
-      lng = coords.lng;
+      lat = coords.lat; lng = coords.lng;
       setLocationStatus('Adres został zgeokodowany i zapisany w profilu.', true);
     } else {
       setLocationStatus('Nie udało się ustalić współrzędnych. Profil nadal zapisze adres tekstowy.', false);

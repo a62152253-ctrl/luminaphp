@@ -11,7 +11,7 @@ export function getTheme() {
 }
 
 export function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.dataset.theme = theme;
   document.querySelectorAll('.theme-toggle-icon').forEach(el => {
     el.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
   });
@@ -22,7 +22,7 @@ export function persistChoice(theme) {
 }
 
 export function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const current = document.documentElement.dataset.theme || 'light';
   const next = current === 'dark' ? 'light' : 'dark';
   applyTheme(next);
   persistChoice(next);

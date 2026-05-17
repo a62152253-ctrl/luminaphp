@@ -168,59 +168,51 @@ export function renderHeader(user) {
   const userSection = document.getElementById('userSection');
   if (!loginBtn || !userSection) return;
 
-  // null = role not yet loaded from Firestore
   const role = window.App?.role ?? null;
 
   if (user) {
     loginBtn.classList.add('hidden');
     userSection.classList.remove('hidden');
     userSection.style.display = 'flex';
-    const avatar = document.getElementById('userAvatar');
-    const name   = document.getElementById('userName');
-    if (avatar) {
-      avatar.src = user.photoURL || '';
-      avatar.onerror = () => { avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6366f1&color=fff`; avatar.onerror = null; };
-    }
-    if (name) name.textContent = user.displayName || user.email;
-
-    if (role === null) {
-      // Role not yet confirmed — hide all role-based nav to prevent wrong link clicks
-      const headerUserLink = document.getElementById('headerUserLink');
-      if (headerUserLink) headerUserLink.href = '#';
-      document.querySelectorAll('[data-role], .nav-dashboard').forEach(el => el.classList.add('hidden'));
-      return;
-    }
-
-    // Avatar link points to the right panel depending on role
-    const headerUserLink = document.getElementById('headerUserLink');
-    if (headerUserLink) {
-      headerUserLink.href = role === 'business'
-        ? '/luminaphp/?page=admin'
-        : '/luminaphp/?page=dashboard';
-    }
-
-    // Role-based navigation
-    document.querySelectorAll('.nav-dashboard').forEach(el => {
-      el.classList.toggle('hidden', el.dataset.role !== 'client');
-    });
-
-    // Show business links for business owners
-    document.querySelectorAll('[data-role="business"]').forEach(el => {
-      el.classList.toggle('hidden', role !== 'business');
-    });
-
-    // Show client links for clients
-    document.querySelectorAll('[data-role="client"]').forEach(el => {
-      el.classList.toggle('hidden', role !== 'client');
-    });
+    updateHeaderUser(user);
+    updateHeaderNav(role);
   } else {
     loginBtn.classList.remove('hidden');
     userSection.classList.add('hidden');
     userSection.style.display = '';
-    document.querySelectorAll('.nav-dashboard').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('[data-role="business"]').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('[data-role="client"]').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.nav-dashboard, [data-role]').forEach(el => el.classList.add('hidden'));
   }
+}
+
+function updateHeaderUser(user) {
+  const avatar = document.getElementById('userAvatar');
+  const name   = document.getElementById('userName');
+  if (avatar) {
+    avatar.src = user.photoURL || '';
+    avatar.onerror = () => { avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6366f1&color=fff`; avatar.onerror = null; };
+  }
+  if (name) name.textContent = user.displayName || user.email;
+}
+
+function updateHeaderNav(role) {
+  const headerUserLink = document.getElementById('headerUserLink');
+  if (role === null) {
+    if (headerUserLink) headerUserLink.href = '#';
+    document.querySelectorAll('[data-role], .nav-dashboard').forEach(el => el.classList.add('hidden'));
+    return;
+  }
+  if (headerUserLink) {
+    headerUserLink.href = role === 'business' ? '/luminaphp/?page=admin' : '/luminaphp/?page=dashboard';
+  }
+  document.querySelectorAll('.nav-dashboard').forEach(el => {
+    el.classList.toggle('hidden', el.dataset.role !== 'client');
+  });
+  document.querySelectorAll('[data-role="business"]').forEach(el => {
+    el.classList.toggle('hidden', role !== 'business');
+  });
+  document.querySelectorAll('[data-role="client"]').forEach(el => {
+    el.classList.toggle('hidden', role !== 'client');
+  });
 }
 
 export function renderSidebar(user) {

@@ -6,7 +6,7 @@ $bizId     = $_GET['id']   ?? '';
 $activeCat = $_GET['cat']  ?? '';
 $validPages = ['home','explore','business','choice','admin','auth','booking','services','employees','gallery','setup','dashboard',
   'profile','reviews','offers','notifications','favorites','map','chat','loyalty','invoice','referral'];
-if (!in_array($page, $validPages)) $page = 'home';
+if (!in_array($page, $validPages)) { $page = 'home'; }
 
 $titles = [
   'home'       => 'Lumina | Rezerwacje Beauty',
@@ -33,6 +33,16 @@ $titles = [
   'referral'   => 'Polecenia | Lumina',
 ];
 $title = $titles[$page];
+
+define('CSS_ACTIVE', 'class="active"');
+define('CSS_ACTIVE_SUFFIX', ' active');
+
+function navActive(string $p, string $cur): string {
+  return $p === $cur ? CSS_ACTIVE : '';
+}
+function navSuffix(string $p, string $cur): string {
+  return $p === $cur ? CSS_ACTIVE_SUFFIX : '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -106,14 +116,14 @@ $title = $titles[$page];
     </a>
 
     <nav class="header-nav">
-      <a href="/luminaphp/?page=explore" <?= $page==='explore'?'class="active"':'' ?>>Eksploruj</a>
-      <a href="/luminaphp/?page=choice" <?= $page==='choice'?'class="active"':'' ?>>Dla Salonów</a>
-      <a href="/luminaphp/?page=map" <?= $page==='map'?'class="active"':'' ?>>Mapa</a>
-      <a href="/luminaphp/?page=offers" <?= $page==='offers'?'class="active"':'' ?>>Promocje</a>
-      <a href="/luminaphp/?page=dashboard" class="nav-dashboard hidden<?= $page==='dashboard'?' active':'' ?>" data-role="client">Moje Wizyty</a>
-      <a href="/luminaphp/?page=admin" id="navBizPanel" class="hidden<?= $page==='admin'?' active':'' ?>" data-role="business">Panel Salonu</a>
-      <a href="/luminaphp/?page=services" class="hidden<?= $page==='services'?' active':'' ?>" data-role="business" data-sub="services">Usługi</a>
-      <a href="/luminaphp/?page=employees" class="hidden<?= $page==='employees'?' active':'' ?>" data-role="business" data-sub="employees">Pracownicy</a>
+      <a href="/luminaphp/?page=explore" <?= navActive('explore', $page) ?>>Eksploruj</a>
+      <a href="/luminaphp/?page=choice" <?= navActive('choice', $page) ?>>Dla Salonów</a>
+      <a href="/luminaphp/?page=map" <?= navActive('map', $page) ?>>Mapa</a>
+      <a href="/luminaphp/?page=offers" <?= navActive('offers', $page) ?>>Promocje</a>
+      <a href="/luminaphp/?page=dashboard" class="nav-dashboard hidden<?= navSuffix('dashboard', $page) ?>" data-role="client">Moje Wizyty</a>
+      <a href="/luminaphp/?page=admin" id="navBizPanel" class="hidden<?= navSuffix('admin', $page) ?>" data-role="business">Panel Salonu</a>
+      <a href="/luminaphp/?page=services" class="hidden<?= navSuffix('services', $page) ?>" data-role="business" data-sub="services">Usługi</a>
+      <a href="/luminaphp/?page=employees" class="hidden<?= navSuffix('employees', $page) ?>" data-role="business" data-sub="employees">Pracownicy</a>
     </nav>
 
     <div class="header-right">
@@ -213,23 +223,23 @@ $title = $titles[$page];
       </button>
     </div>
     <div class="mobile-nav-links">
-      <a href="/luminaphp/?page=explore" class="mobile-nav-link <?= $page==='explore'?'active':'' ?>">
+      <a href="/luminaphp/?page=explore" class="mobile-nav-link<?= navSuffix('explore', $page) ?>">
         <span class="material-icons">search</span>Eksploruj
       </a>
-      <a href="/luminaphp/?page=choice" class="mobile-nav-link <?= $page==='choice'?'active':'' ?>">
+      <a href="/luminaphp/?page=choice" class="mobile-nav-link<?= navSuffix('choice', $page) ?>">
         <span class="material-icons">store</span>Dla Salonów
       </a>
       <div class="mobile-nav-sep"></div>
-      <a href="/luminaphp/?page=dashboard" class="mobile-nav-link nav-dashboard hidden<?= $page==='dashboard'?' active':'' ?>" data-role="client">
+      <a href="/luminaphp/?page=dashboard" class="mobile-nav-link nav-dashboard hidden<?= navSuffix('dashboard', $page) ?>" data-role="client">
         <span class="material-icons">calendar_today</span>Moje Wizyty
       </a>
-      <a href="/luminaphp/?page=admin" class="mobile-nav-link hidden<?= $page==='admin'?' active':'' ?>" data-role="business">
+      <a href="/luminaphp/?page=admin" class="mobile-nav-link hidden<?= navSuffix('admin', $page) ?>" data-role="business">
         <span class="material-icons">dashboard</span>Panel Salonu
       </a>
-      <a href="/luminaphp/?page=services" class="mobile-nav-link hidden<?= $page==='services'?' active':'' ?>" data-role="business" data-sub="services">
+      <a href="/luminaphp/?page=services" class="mobile-nav-link hidden<?= navSuffix('services', $page) ?>" data-role="business" data-sub="services">
         <span class="material-icons">spa</span>Usługi
       </a>
-      <a href="/luminaphp/?page=employees" class="mobile-nav-link hidden<?= $page==='employees'?' active':'' ?>" data-role="business" data-sub="employees">
+      <a href="/luminaphp/?page=employees" class="mobile-nav-link hidden<?= navSuffix('employees', $page) ?>" data-role="business" data-sub="employees">
         <span class="material-icons">group</span>Pracownicy
       </a>
     </div>

@@ -293,57 +293,67 @@ async function checkIp() {
 // Score 50-99  → BORDERLINE → save, manual review
 // Score < 50   → BOT    → reject silently (fake success)
 
+function scoreTimingFactor(elapsed) {
+  if (elapsed >= 60) return 30;
+  if (elapsed >= 20) return 20;
+  if (elapsed >= 10) return 10;
+  if (elapsed < 3)   return -60;
+  return 0;
+}
+
+function scoreMouseFactor(moves) {
+  if (moves > 50)  return 20;
+  if (moves > 20)  return 15;
+  if (moves > 5)   return 8;
+  if (moves === 0) return -25;
+  return 0;
+}
+
+function scoreKeysFactor(keys) {
+  if (keys > 80) return 15;
+  if (keys > 30) return 10;
+  if (keys > 10) return 5;
+  return -10;
+}
+
+function scoreMsgLength(len) {
+  if (len >= 200) return 25;
+  if (len >= 120) return 18;
+  if (len >= 80)  return 10;
+  return -20;
+}
+
+async function scoreUserFactor(user, name) {
+  if (!user) return 0;
+  let s = 15;
+  if (user.emailVerified) s += 20;
+  const createdAt = user.metadata?.creationTime;
+  if (createdAt) {
+    const ageMs = Date.now() - new Date(createdAt).getTime();
+    if      (ageMs > 7 * 86_400_000) s += 20;
+    else if (ageMs > 86_400_000)     s += 10;
+    else                             s -= 25;
+  }
+  if (user.photoURL) s += 10;
+  if (name && _bizName && similarity(name.toLowerCase(), _bizName.toLowerCase()) > 0.85) s -= 20;
+  return s;
+}
+
 async function calcScore(nip, phone, msg, name) {
   if (document.getElementById('reclaimHp')?.value) return -999;
 
-  let score = 0;
   const elapsed = (Date.now() - _openedAt) / 1000;
-
-  if      (elapsed >= 60) score += 30;
-  else if (elapsed >= 20) score += 20;
-  else if (elapsed >= 10) score += 10;
-  else if (elapsed < 3)   score -= 60;
-
-  if      (_mouseMoves > 50)  score += 20;
-  else if (_mouseMoves > 20)  score += 15;
-  else if (_mouseMoves > 5)   score += 8;
-  else if (_mouseMoves === 0) score -= 25;
-
-  if      (_keystrokes > 80) score += 15;
-  else if (_keystrokes > 30) score += 10;
-  else if (_keystrokes > 10) score += 5;
-  else                       score -= 10;
-
-  if      (msg.length >= 200) score += 25;
-  else if (msg.length >= 120) score += 18;
-  else if (msg.length >= 80)  score += 10;
-  else                        score -= 20;
+  let score = scoreTimingFactor(elapsed)
+            + scoreMouseFactor(_mouseMoves)
+            + scoreKeysFactor(_keystrokes)
+            + scoreMsgLength(msg.length);
 
   if (nip && isValidNip(nip)) score += 20;
   else if (nip) score -= 30;
 
   if (phone && /^\+?[\d\s\-]{9,15}$/.test(phone)) score += 10;
 
-  const user = window.App?.user;
-  if (user) {
-    score += 15;
-    if (user.emailVerified) score += 20;
-
-    const createdAt = user.metadata?.creationTime;
-    if (createdAt) {
-      const ageMs = Date.now() - new Date(createdAt).getTime();
-      if      (ageMs > 7 * 86_400_000) score += 20;
-      else if (ageMs > 86_400_000)     score += 10;
-      else                             score -= 25;
-    }
-
-    if (user.photoURL) score += 10;
-
-    if (name && _bizName) {
-      const sim = similarity(name.toLowerCase(), _bizName.toLowerCase());
-      if (sim > 0.85) score -= 20;
-    }
-  }
+  score += await scoreUserFactor(window.App?.user, name);
 
   const { proxy } = await checkIp();
   if (proxy) score -= 40;
@@ -456,33 +466,7 @@ async function submit() {
 
   if (score >= 50) {
     try {
-      const ref = await addDoc(collection(db, 'claims'), {
-        ...built.payload,
-        score,
-        scoreBand,
-        riskLevel,
-        businessVerifiedAtSubmit: _bizVerified,
-        interaction: {
-          openedMs: Math.max(0, Date.now() - _openedAt),
-          mouseMoves: _mouseMoves,
-          keystrokes: _keystrokes,
-        },
-        clientContext: {
-          userAgent: navigator.userAgent,
-          language: navigator.language,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-        },
-        statusTimeline: [{
-          status: 'pending',
-          label: 'Zgłoszenie przyjęte',
-          atClient: new Date().toISOString(),
-        }],
-        status:       'pending',
-        statusUpdatedAt: serverTimestamp(),
-        createdAt:    serverTimestamp(),
-        updatedAt:    serverTimestamp(),
-      });
-      claimId = ref.id;
+      claimId = await saveClaimDoc(built.payload, score, scoreBand, riskLevel);
     } catch (e) {
       const errElDirect = document.getElementById('reclaimError');
       if (errElDirect) { errElDirect.textContent = 'Błąd zapisu: ' + e.message; errElDirect.style.display = 'flex'; }
@@ -492,6 +476,30 @@ async function submit() {
   }
 
   showResult(score, claimId);
+}
+
+async function saveClaimDoc(payload, score, scoreBand, riskLevel) {
+  const ref = await addDoc(collection(db, 'claims'), {
+    ...payload,
+    score, scoreBand, riskLevel,
+    businessVerifiedAtSubmit: _bizVerified,
+    interaction: {
+      openedMs: Math.max(0, Date.now() - _openedAt),
+      mouseMoves: _mouseMoves,
+      keystrokes: _keystrokes,
+    },
+    clientContext: {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    },
+    statusTimeline: [{ status: 'pending', label: 'Zgłoszenie przyjęte', atClient: new Date().toISOString() }],
+    status: 'pending',
+    statusUpdatedAt: serverTimestamp(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
 }
 
 // ─── RESULT SCREEN ────────────────────────────────────────────────────────────

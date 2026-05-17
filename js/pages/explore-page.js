@@ -209,7 +209,7 @@ function showGeoBanner() {
   div.className = 'geo-banner';
   div.innerHTML = `<span class="material-icons" style="font-size:1rem;color:var(--accent)">my_location</span>
     Sortowanie według odległości od Twojej lokalizacji`;
-  toolbar.insertAdjacentElement('afterend', div);
+  toolbar.after(div);
 }
 
 // ─── OPEN NOW HELPERS ─────────────────────────────────────────────────────────
@@ -271,30 +271,23 @@ function applyAndRender() {
   if (_filterOpenNow)   list = list.filter(b => isOpenNow(b));
   if (_filterOpenToday) list = list.filter(b => isOpenToday(b));
 
-  // Sort
-  switch (_sortMode) {
-    case 'distance':
-      list = _userLoc ? sortByDistance(list, _userLoc.lat, _userLoc.lng) : list;
-      break;
-    case 'rating':
-      list = list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      break;
-    case 'price_low':
-      list = list.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0));
-      break;
-    case 'price_high':
-      list = list.sort((a, b) => (b.minPrice || 0) - (a.minPrice || 0));
-      break;
-    default:
-      if (_userLoc) list = sortByDistance(list, _userLoc.lat, _userLoc.lng);
-  }
+  list = applySortMode(list);
 
-  // Update count
   const countEl = document.getElementById('resultsCount');
   if (countEl) countEl.textContent = list.length;
 
   renderGrid(list);
   if (_currentView === 'map' && typeof L !== 'undefined') addMarkers(list);
+}
+
+function applySortMode(list) {
+  switch (_sortMode) {
+    case 'distance':  return _userLoc ? sortByDistance(list, _userLoc.lat, _userLoc.lng) : list;
+    case 'rating':    return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    case 'price_low': return list.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0));
+    case 'price_high':return list.sort((a, b) => (b.minPrice || 0) - (a.minPrice || 0));
+    default:          return _userLoc ? sortByDistance(list, _userLoc.lat, _userLoc.lng) : list;
+  }
 }
 
 // ─── CARD TEMPLATE ────────────────────────────────────────────────────────────

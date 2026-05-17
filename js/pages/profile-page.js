@@ -23,7 +23,7 @@ export async function initProfile() {
 
   document.getElementById('profilePagePhoto')?.addEventListener('change', async e => {
     const fakeInput = { files: e.target.files };
-    await onProfilePhotoChange(fakeInput);
+    onProfilePhotoChange(fakeInput);
     const avatar = document.getElementById('profilePageAvatar');
     if (window.App?.user?.photoURL && avatar) avatar.src = window.App.user.photoURL;
   });

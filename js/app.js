@@ -38,65 +38,22 @@ listenAuth(async user => {
 
   if (user) {
     try {
-      // Load user's role and profile doc from Firestore (creates doc for new Google users)
       const userDoc = await loadUserDoc(user.uid, user);
       window.App.userDoc = userDoc;
       window.App.role    = userDoc.role;
-
-      // Update header biz link visibility
       renderHeader(user);
 
-      // Redirect from auth page after login (handles Google login + any case auth-page.js misses)
       const currentPage = getCurrentPage();
-      if (currentPage === 'auth' && !window._authBusy) {
-        if (userDoc.role === 'business') {
-          const bizId = userDoc.businessId || user.uid;
-          try {
-            const bizSnap = await getDoc(doc(db, 'businesses', bizId));
-            window.location.href = (bizSnap.exists() && bizSnap.data().profileComplete)
-              ? '/luminaphp/?page=admin'
-              : '/luminaphp/?page=setup';
-          } catch(_) {
-            window.location.href = '/luminaphp/?page=setup';
-          }
-        } else if (userDoc.role === 'client') {
-          window.location.href = '/luminaphp/?page=dashboard';
-        }
-        // null role (Firestore error): stay on auth page
-        return;
-      }
+      if (await handleAuthRedirects(user, userDoc, currentPage)) { return; }
 
-      // Business user on the client dashboard → send to admin panel
-      if (userDoc.role === 'business' && currentPage === 'dashboard') {
-        window.location.href = '/luminaphp/?page=admin';
-        return;
-      }
-
-      // Redirect business owner to setup if profile not complete (when navigating other pages)
-      if (userDoc.role === 'business' && currentPage !== 'setup' && currentPage !== 'admin') {
-        const bizId = userDoc.businessId || user.uid;
-        try {
-          const bizSnap = await getDoc(doc(db, 'businesses', bizId));
-          if (bizSnap.exists() && !bizSnap.data().profileComplete) {
-            window.location.href = '/luminaphp/?page=setup';
-            return;
-          }
-        } catch(_) {}
-      }
-
-      // Load notifications (failure must not block _ready)
       try {
         window.App.notifications = await loadNotifications(user.uid);
       } catch(_) {
         window.App.notifications = [];
       }
       renderNotifications(window.App.notifications);
-
-      // FCM push — fire-and-forget, never blocks page load
       initPush(app, user.uid);
-    } catch(_) {
-      // loadUserDoc failed — leave role as null, still unblock pages
-    }
+    } catch(_) {}
   } else {
     window.App.userDoc   = null;
     window.App.role      = null;
@@ -104,9 +61,51 @@ listenAuth(async user => {
     renderNotifications([]);
   }
 
-  // Always signal ready — pages waiting in tryInit can now proceed
   window.App._ready = true;
 });
+
+async function handleAuthRedirects(user, userDoc, currentPage) {
+  if (currentPage === 'auth' && !window._authBusy) {
+    await redirectFromAuth(user, userDoc);
+    return true;
+  }
+  if (userDoc.role === 'business' && currentPage === 'dashboard') {
+    window.location.href = '/luminaphp/?page=admin';
+    return true;
+  }
+  if (userDoc.role === 'business' && currentPage !== 'setup' && currentPage !== 'admin') {
+    return checkSetupRequired(user, userDoc);
+  }
+  return false;
+}
+
+async function redirectFromAuth(user, userDoc) {
+  if (userDoc.role === 'business') {
+    const bizId = userDoc.businessId || user.uid;
+    try {
+      const bizSnap = await getDoc(doc(db, 'businesses', bizId));
+      window.location.href = (bizSnap.exists() && bizSnap.data().profileComplete)
+        ? '/luminaphp/?page=admin'
+        : '/luminaphp/?page=setup';
+    } catch(_) {
+      window.location.href = '/luminaphp/?page=setup';
+    }
+  } else if (userDoc.role === 'client') {
+    window.location.href = '/luminaphp/?page=dashboard';
+  }
+}
+
+async function checkSetupRequired(user, userDoc) {
+  const bizId = userDoc.businessId || user.uid;
+  try {
+    const bizSnap = await getDoc(doc(db, 'businesses', bizId));
+    if (bizSnap.exists() && !bizSnap.data().profileComplete) {
+      window.location.href = '/luminaphp/?page=setup';
+      return true;
+    }
+  } catch(_) {}
+  return false;
+}
 
 // ===== GLOBAL HANDLERS =====
 window.login  = login;
@@ -168,13 +167,13 @@ document.addEventListener('click', e => {
   const saved = localStorage.getItem('lumina_theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const isDark = saved ? saved === 'dark' : prefersDark;
-  if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+  if (isDark) { document.documentElement.dataset.theme = 'dark'; }
 })();
 
 window.toggleDarkMode = () => {
   const html  = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const isDark = html.dataset.theme === 'dark';
+  html.dataset.theme = isDark ? 'light' : 'dark';
   localStorage.setItem('lumina_theme', isDark ? 'light' : 'dark');
   document.querySelectorAll('.theme-toggle-icon').forEach(el => {
     el.textContent = isDark ? 'dark_mode' : 'light_mode';

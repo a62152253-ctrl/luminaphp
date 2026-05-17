@@ -122,7 +122,7 @@ $bizId = $_GET['id'] ?? '';
 
 <script>
 window.servicesPage = {
-  bizId: '<?= $bizId ?>',
+  bizId: <?= json_encode($bizId) ?>,
   currentCategory: 'all',
   currentView: 'grid'
 };
@@ -143,7 +143,12 @@ function closeServiceModal() {
 }
 
 function saveService() {
-  // Implementation
+  const name = document.getElementById('svcName')?.value.trim();
+  if (!name) {
+    alert('Podaj nazwę usługi.');
+    return false;
+  }
   closeServiceModal();
+  return true;
 }
 </script>

@@ -189,6 +189,15 @@ window.authGoogle = async () => {
   }
 };
 
+function validateRegisterBase(name, email, password) {
+  if (!name)               return 'Podaj imię i nazwisko.';
+  if (!email)              return 'Podaj adres e-mail.';
+  if (!password)           return 'Podaj hasło.';
+  if (password.length < 8) return 'Hasło musi mieć min. 8 znaków.';
+  if (!/[0-9]/.test(password)) return 'Hasło musi zawierać co najmniej jedną cyfrę.';
+  return null;
+}
+
 // ===== REGISTER =====
 window.authRegister = async () => {
   hideError();
@@ -197,11 +206,8 @@ window.authRegister = async () => {
   const password = document.getElementById('regPassword')?.value;
   const isBiz    = document.getElementById('roleBusiness')?.classList.contains('active');
 
-  if (!name)               { showError('Podaj imię i nazwisko.');             return; }
-  if (!email)              { showError('Podaj adres e-mail.');                return; }
-  if (!password)           { showError('Podaj hasło.');                       return; }
-  if (password.length < 8) { showError('Hasło musi mieć min. 8 znaków.');    return; }
-  if (!/[0-9]/.test(password)) { showError('Hasło musi zawierać co najmniej jedną cyfrę.'); return; }
+  const baseErr = validateRegisterBase(name, email, password);
+  if (baseErr) { showError(baseErr); return; }
 
   let bizName, category, city;
   if (isBiz) {
@@ -213,7 +219,6 @@ window.authRegister = async () => {
     if (!city)     { showError('Podaj miasto salonu.');  return; }
   }
 
-  // Client must verify phone before creating account
   if (!isBiz && !_phoneVerified) {
     showError('Zweryfikuj numer telefonu SMS-em przed utworzeniem konta.');
     document.getElementById('regPhone')?.focus();

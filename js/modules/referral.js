@@ -29,7 +29,8 @@ export async function trackClick(refCode) {
     referrerId: refDoc.id,
     createdAt: serverTimestamp(),
   });
-  localStorage.setItem('lumina_ref', refCode);
+  const safeCode = refCode.replace(/[^A-Z0-9]/gi, '').slice(0, 32);
+  localStorage.setItem('lumina_ref', safeCode);
 }
 
 export async function getStats(uid) {

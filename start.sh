@@ -27,8 +27,8 @@ fi
 echo -e "${BLUE}✓ Docker is running${NC}"
 
 # Check for .env file
-if [ ! -f .env ]; then
-    if [ -f .env.example ]; then
+if [[ ! -f .env ]]; then
+    if [[ -f .env.example ]]; then
         echo -e "${YELLOW}⚠️  .env file not found. Creating from .env.example...${NC}"
         cp .env.example .env
         echo -e "${YELLOW}⚠️  IMPORTANT: Please edit .env file with your configuration!${NC}"
@@ -45,7 +45,7 @@ fi
 echo -e "${GREEN}✓ .env file configured${NC}"
 
 # Generate SSL certificates if they don't exist
-if [ ! -f ssl/cert.pem ] || [ ! -f ssl/key.pem ]; then
+if [[ ! -f ssl/cert.pem || ! -f ssl/key.pem ]]; then
     echo -e "${BLUE}🔐 Generating SSL certificates...${NC}"
     chmod +x generate-ssl.sh
     ./generate-ssl.sh
