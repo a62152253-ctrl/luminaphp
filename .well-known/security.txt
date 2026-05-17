@@ -1,0 +1,15 @@
+Contact: mailto:security@lumina.app
+Expires: 2027-01-01T00:00:00.000Z
+Encryption: https://lumina.app/.well-known/pgp-key.txt
+Acknowledgments: https://lumina.app/security/hall-of-fame
+Preferred-Languages: pl, en
+Canonical: https://lumina.app/.well-known/security.txt
+Policy: https://lumina.app/security/policy
+Hiring: https://lumina.app/careers
+
+# Lumina Security Policy
+# If you discover a security vulnerability, please report it responsibly.
+# We ask that you:
+# - Give us reasonable time to fix the issue before disclosure
+# - Not access or modify user data beyond what is needed to demonstrate the vulnerability
+# - Not perform DoS attacks, social engineering, or physical attacks

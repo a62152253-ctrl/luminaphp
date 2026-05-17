@@ -1,0 +1,111 @@
+{
+  "version": "1.0",
+  "description": "Role and permission definitions for Lumina",
+  "roles": {
+    "guest": {
+      "label": "Guest",
+      "description": "Unauthenticated visitor",
+      "permissions": [
+        "anime.view",
+        "anime.search",
+        "anime.list",
+        "episode.view_preview"
+      ]
+    },
+    "user": {
+      "label": "User",
+      "description": "Standard authenticated user",
+      "inherits": "guest",
+      "permissions": [
+        "anime.view_full",
+        "episode.watch",
+        "favorites.manage",
+        "reviews.create",
+        "reviews.edit_own",
+        "reviews.delete_own",
+        "comments.create",
+        "comments.edit_own",
+        "comments.delete_own",
+        "profile.view",
+        "profile.edit_own",
+        "notifications.manage",
+        "history.view",
+        "watchlist.manage",
+        "ratings.create"
+      ]
+    },
+    "premium": {
+      "label": "Premium",
+      "description": "Premium subscriber with extended access",
+      "inherits": "user",
+      "permissions": [
+        "episode.watch_premium",
+        "episode.download",
+        "stream.hd",
+        "stream.4k",
+        "ads.skip",
+        "early_access.view"
+      ]
+    },
+    "moderator": {
+      "label": "Moderator",
+      "description": "Community moderator",
+      "inherits": "user",
+      "permissions": [
+        "reviews.delete_any",
+        "comments.delete_any",
+        "reports.view",
+        "reports.resolve",
+        "users.warn",
+        "users.mute"
+      ]
+    },
+    "admin": {
+      "label": "Administrator",
+      "description": "Full system access",
+      "inherits": "moderator",
+      "permissions": [
+        "*"
+      ]
+    }
+  },
+  "permissions": {
+    "anime.view": "View anime details",
+    "anime.view_full": "View full anime without restrictions",
+    "anime.search": "Search anime",
+    "anime.list": "Browse anime lists",
+    "anime.create": "Create anime entries",
+    "anime.edit": "Edit anime entries",
+    "anime.delete": "Delete anime entries",
+    "episode.view_preview": "Watch episode previews",
+    "episode.watch": "Watch standard episodes",
+    "episode.watch_premium": "Watch premium episodes",
+    "episode.download": "Download episodes",
+    "episode.manage": "Manage episode content",
+    "stream.hd": "Stream in HD quality",
+    "stream.4k": "Stream in 4K quality",
+    "favorites.manage": "Manage personal favorites",
+    "reviews.create": "Write reviews",
+    "reviews.edit_own": "Edit own reviews",
+    "reviews.delete_own": "Delete own reviews",
+    "reviews.delete_any": "Delete any review",
+    "comments.create": "Post comments",
+    "comments.edit_own": "Edit own comments",
+    "comments.delete_own": "Delete own comments",
+    "comments.delete_any": "Delete any comment",
+    "profile.view": "View user profiles",
+    "profile.edit_own": "Edit own profile",
+    "notifications.manage": "Manage notifications",
+    "history.view": "View watch history",
+    "watchlist.manage": "Manage watchlist",
+    "ratings.create": "Rate anime",
+    "reports.view": "View user reports",
+    "reports.resolve": "Resolve user reports",
+    "users.warn": "Issue warnings to users",
+    "users.mute": "Mute users",
+    "users.ban": "Ban users",
+    "users.manage": "Full user management",
+    "ads.skip": "Skip advertisements",
+    "early_access.view": "Access early-release content"
+  }
+}

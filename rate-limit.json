@@ -1,0 +1,106 @@
+{
+  "version": "1.0",
+  "description": "Rate limiting rules for Lumina API endpoints",
+  "global": {
+    "enabled": true,
+    "storage": "redis",
+    "key_prefix": "rate_limit"
+  },
+  "rules": {
+    "api_general": {
+      "pattern": "/api/*",
+      "window": 900,
+      "max_requests": {
+        "guest": 60,
+        "user": 300,
+        "premium": 600,
+        "admin": 2000
+      },
+      "response": {
+        "status": 429,
+        "message": "Too Many Requests",
+        "retry_after_header": true
+      }
+    },
+    "auth_login": {
+      "pattern": "/api/auth/login",
+      "window": 900,
+      "max_requests": {
+        "guest": 10,
+        "user": 10
+      },
+      "lockout": {
+        "enabled": true,
+        "after_attempts": 5,
+        "duration": 1800
+      }
+    },
+    "auth_register": {
+      "pattern": "/api/auth/register",
+      "window": 3600,
+      "max_requests": {
+        "guest": 3
+      }
+    },
+    "auth_password_reset": {
+      "pattern": "/api/auth/reset-password",
+      "window": 3600,
+      "max_requests": {
+        "guest": 5,
+        "user": 5
+      }
+    },
+    "stream": {
+      "pattern": "/api/stream/*",
+      "window": 3600,
+      "max_requests": {
+        "user": 50,
+        "premium": 200
+      }
+    },
+    "upload": {
+      "pattern": "/api/upload",
+      "window": 3600,
+      "max_requests": {
+        "user": 10,
+        "admin": 100
+      },
+      "max_size_mb": 50
+    },
+    "search": {
+      "pattern": "/api/search",
+      "window": 60,
+      "max_requests": {
+        "guest": 10,
+        "user": 30,
+        "premium": 60
+      }
+    },
+    "reviews": {
+      "pattern": "/api/reviews",
+      "method": "POST",
+      "window": 3600,
+      "max_requests": {
+        "user": 5,
+        "premium": 20
+      }
+    },
+    "comments": {
+      "pattern": "/api/comments",
+      "method": "POST",
+      "window": 60,
+      "max_requests": {
+        "user": 5,
+        "premium": 15
+      }
+    }
+  },
+  "whitelist": {
+    "ips": [],
+    "user_ids": []
+  },
+  "blacklist": {
+    "ips": [],
+    "user_ids": []
+  }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Maskable: safe zone is the inner 80% — keep content inside ~200px margin -->
+  <rect width="512" height="512" fill="#6366f1"/>
+  <path d="M256 148
+    l16 64 64 16-64 16-16 64
+    -16-64-64-16 64-16z"
+    fill="white" opacity="0.95"/>
+  <path d="M324 252
+    l8 32 32 8-32 8-8 32
+    -8-32-32-8 32-8z"
+    fill="white" opacity="0.75"/>
+  <path d="M196 296
+    l6 24 24 6-24 6-6 24
+    -6-24-24-6 24-6z"
+    fill="white" opacity="0.6"/>
+</svg>

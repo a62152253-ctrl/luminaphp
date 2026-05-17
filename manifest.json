@@ -1,0 +1,41 @@
+{
+  "name": "Lumina",
+  "short_name": "Lumina",
+  "description": "Rezerwacje Beauty online — barber, fryzjer, kosmetyczka i więcej.",
+  "start_url": "/luminaphp/",
+  "scope": "/luminaphp/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f0f11",
+  "theme_color": "#4f46e5",
+  "lang": "pl",
+  "icons": [
+    {
+      "src": "/luminaphp/img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/luminaphp/img/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Zarezerwuj wizytę",
+      "short_name": "Rezerwuj",
+      "url": "/luminaphp/?page=explore",
+      "icons": [{ "src": "/luminaphp/img/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Moje Wizyty",
+      "short_name": "Wizyty",
+      "url": "/luminaphp/?page=dashboard",
+      "icons": [{ "src": "/luminaphp/img/icon.svg", "sizes": "any" }]
+    }
+  ],
+  "categories": ["lifestyle", "health", "beauty"]
+}

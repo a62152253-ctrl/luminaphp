@@ -1,0 +1,47 @@
+version: '3.9'
+
+# Local development overrides — NOT for production
+# This file is auto-loaded by docker compose alongside docker-compose.yml
+
+services:
+  php:
+    build:
+      target: development
+    volumes:
+      - ./:/app
+    environment:
+      - APP_ENV=development
+      - APP_DEBUG=true
+      - NODE_ENV=development
+    ports:
+      - "9003:9003"
+
+  nginx:
+    ports:
+      - "8080:80"
+      - "8443:443"
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly no
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: lumina-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - lumina-net
+
+  adminer:
+    image: adminer:latest
+    container_name: lumina-adminer
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=host.docker.internal
+    networks:
+      - lumina-net

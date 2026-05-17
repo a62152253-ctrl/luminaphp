@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "description": "Content Security Policy configuration for Lumina",
+  "environments": {
+    "development": {
+      "default-src": ["'self'"],
+      "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://fonts.googleapis.com", "https://unpkg.com"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
+      "img-src": ["'self'", "data:", "https:", "blob:"],
+      "font-src": ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+      "connect-src": ["'self'", "ws://localhost:*", "http://localhost:*"],
+      "media-src": ["'self'", "blob:"],
+      "object-src": ["'none'"],
+      "frame-src": ["'none'"],
+      "worker-src": ["'self'", "blob:"],
+      "manifest-src": ["'self'"],
+      "base-uri": ["'self'"],
+      "form-action": ["'self'"]
+    },
+    "production": {
+      "default-src": ["'self'"],
+      "script-src": ["'self'", "https://fonts.googleapis.com"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "img-src": ["'self'", "data:", "https:", "blob:"],
+      "font-src": ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+      "connect-src": ["'self'", "https://lumina.app", "https://api.lumina.app"],
+      "media-src": ["'self'", "blob:", "https://storage.googleapis.com"],
+      "object-src": ["'none'"],
+      "frame-src": ["'none'"],
+      "worker-src": ["'self'", "blob:"],
+      "manifest-src": ["'self'"],
+      "base-uri": ["'self'"],
+      "form-action": ["'self'"],
+      "upgrade-insecure-requests": true,
+      "block-all-mixed-content": true
+    }
+  },
+  "report": {
+    "report-uri": "/api/csp-report",
+    "report-only": false
+  }
+}

@@ -1,0 +1,14 @@
+parameters:
+    level: 6
+    paths:
+        - .
+    excludePaths:
+        - vendor
+        - node_modules
+        - storage
+        - logs
+        - composer.phar
+    checkMissingIterableValueType: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        - '#Call to an undefined method PDO::#'

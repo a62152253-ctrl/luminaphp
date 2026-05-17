@@ -1,0 +1,143 @@
+# Security & Performance optimizations for Lumina
+# This .htaccess is used as Apache fallback (when Nginx is not available)
+
+# Enable mod_rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /luminaphp/
+    
+    # Prevent access to sensitive files and directories
+    RewriteRule ^\.env$ - [F]
+    RewriteRule ^\.git - [F]
+    RewriteRule ^\.gitignore$ - [F]
+    RewriteRule ^composer\.(json|lock)$ - [F]
+    RewriteRule ^docker-compose\.yml$ - [F]
+    RewriteRule ^Dockerfile$ - [F]
+    RewriteRule ^nginx\.conf$ - [F]
+    RewriteRule ^functions/config\.php$ - [F]
+    RewriteRule ^firebase-debug\.log$ - [F]
+    
+    # Route all requests through index.php (except existing files/dirs)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>
+
+# Disable directory listing
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Clickjacking protection
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;"
+    
+    # HSTS (Strict-Transport-Security)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    
+    # Permissions Policy (formerly Feature Policy)
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    
+    # Hide PHP version
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+    Header always set X-Powered-By "Lumina"
+</IfModule>
+
+# Disable execution of scripts in upload directories
+<Directory "uploads">
+    <IfModule mod_php.c>
+        php_flag engine off
+    </IfModule>
+    <FilesMatch "\.php$">
+        Order Deny,Allow
+        Deny from all
+    </FilesMatch>
+    AddType text/plain .php .phtml .php3 .php4 .php5 .php6 .phps .pht .phar
+</Directory>
+
+# Disable execution of scripts in temp directories
+<Directory "tmp">
+    <IfModule mod_php.c>
+        php_flag engine off
+    </IfModule>
+    <FilesMatch "\.php$">
+        Order Deny,Allow
+        Deny from all
+    </FilesMatch>
+</Directory>
+
+# Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/xml+rss application/rss+xml font/truetype font/opentype application/vnd.ms-fontobject image/svg+xml
+    <IfModule mod_setenvif.c>
+        BrowserMatch ^Mozilla/4 gzip-only-text/html
+        BrowserMatch ^Mozilla/4\.0[678] no-gzip
+        BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+        SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png)$ no-gzip
+    </IfModule>
+</IfModule>
+
+# Caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 2 days"
+    ExpiresByType text/html "access plus 2 hours"
+    ExpiresByType text/plain "access plus 1 day"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType font/truetype "access plus 1 year"
+    ExpiresByType font/opentype "access plus 1 year"
+    ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# ETag optimization
+<IfModule mod_headers.c>
+    Header unset ETag
+    FileETag None
+</IfModule>
+
+# Prevent access to common admin/config files
+<FilesMatch "^(config|settings|database|backup)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "\.(env|json|config|lock|log|sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Prevent PHP execution in specific directories
+<Files "*.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</Files>
+
+# Allow only index.php to be executed
+<Files "index.php">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</Files>

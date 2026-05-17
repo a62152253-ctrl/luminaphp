@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "description": "Monitoring and alerting configuration for Lumina",
+  "application": {
+    "name": "Lumina",
+    "environment": "${APP_ENV}",
+    "version": "1.0.0"
+  },
+  "error_tracking": {
+    "sentry": {
+      "enabled": true,
+      "dsn": "${SENTRY_DSN}",
+      "traces_sample_rate": 0.1,
+      "environment": "${APP_ENV}",
+      "release": "lumina@1.0.0",
+      "capture_levels": ["error", "critical", "alert", "emergency"]
+    }
+  },
+  "apm": {
+    "new_relic": {
+      "enabled": false,
+      "license_key": "${NEW_RELIC_LICENSE_KEY}",
+      "app_name": "Lumina"
+    }
+  },
+  "health_checks": {
+    "endpoint": "/health",
+    "interval_seconds": 30,
+    "checks": {
+      "database": {
+        "enabled": true,
+        "timeout_ms": 2000,
+        "query": "SELECT 1"
+      },
+      "redis": {
+        "enabled": true,
+        "timeout_ms": 1000,
+        "command": "PING"
+      },
+      "firebase": {
+        "enabled": true,
+        "timeout_ms": 5000
+      },
+      "disk": {
+        "enabled": true,
+        "min_free_mb": 500
+      }
+    }
+  },
+  "alerts": {
+    "slack": {
+      "enabled": true,
+      "webhook": "${LOG_SLACK_WEBHOOK_URL}",
+      "channel": "#lumina-alerts",
+      "levels": ["error", "critical", "emergency"]
+    },
+    "email": {
+      "enabled": true,
+      "recipients": ["${ADMIN_EMAIL}"],
+      "levels": ["critical", "emergency"]
+    },
+    "thresholds": {
+      "error_rate_per_minute": 10,
+      "response_time_ms": 2000,
+      "memory_usage_percent": 85,
+      "cpu_usage_percent": 90
+    }
+  },
+  "logging": {
+    "level": "${LOG_LEVEL}",
+    "channel": "${LOG_CHANNEL}",
+    "retention_days": 30,
+    "paths": {
+      "app":    "storage/logs/lumina.log",
+      "error":  "storage/logs/error.log",
+      "access": "storage/logs/access.log"
+    }
+  },
+  "uptime": {
+    "ping_url": "https://lumina.app/health",
+    "expected_response": 200,
+    "timeout_seconds": 10
+  }
+}

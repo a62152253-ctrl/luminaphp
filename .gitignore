@@ -1,0 +1,83 @@
+# =============================================================================
+# Secrets & environment
+# Real values: Firebase private keys, DB passwords, JWT secret, SMTP, Redis.
+# Copy .env.example → .env and fill in locally; never commit populated files.
+# =============================================================================
+.env
+.env.local
+.env.production
+.env.development
+.env.testing
+
+# Other env variants (staging, backup copies, etc.)
+.env.*
+!.env.example
+
+# =============================================================================
+# Credential files & key material
+# Prefer .env for PHP; JSON/P12 paths are listed in ENVIRONMENT.md as alternatives.
+# js/firebase-config.js is intentionally tracked (public web SDK config).
+# =============================================================================
+*-firebase-adminsdk-*.json
+firebase-adminsdk*.json
+*serviceAccount*.json
+*service-account*.json
+*credentials*.json
+google-services.json
+GoogleService-Info.plist
+*.p12
+*.pfx
+*.pem
+*.key
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.secret
+secrets/
+.secrets/
+
+# =============================================================================
+# Runtime, logs, TLS
+# =============================================================================
+storage/
+logs/
+ssl/
+
+# =============================================================================
+# Web server auth
+# =============================================================================
+.htpasswd
+.htpasswd.*
+
+# =============================================================================
+# Dependencies
+# =============================================================================
+vendor/
+node_modules/
+
+# =============================================================================
+# PHP / build artifacts
+# =============================================================================
+.phpunit.result.cache
+.php-cs-fixer.cache
+.phpstan.cache
+
+# =============================================================================
+# Firebase CLI (local)
+# =============================================================================
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+
+# =============================================================================
+# IDE & OS
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini

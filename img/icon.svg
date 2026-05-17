@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#6366f1"/>
+  <!-- sparkle / auto_awesome shape -->
+  <path d="M256 96
+    l18 72 72 18-72 18-18 72
+    -18-72-72-18 72-18z"
+    fill="white" opacity="0.95"/>
+  <path d="M340 220
+    l10 40 40 10-40 10-10 40
+    -10-40-40-10 40-10z"
+    fill="white" opacity="0.75"/>
+  <path d="M172 300
+    l8 32 32 8-32 8-8 32
+    -8-32-32-8 32-8z"
+    fill="white" opacity="0.6"/>
+</svg>
