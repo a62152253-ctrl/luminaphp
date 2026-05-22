@@ -41,16 +41,14 @@ COPY --from=builder /app/vendor ./vendor
 # Copy application code
 COPY --chown=appuser:appuser . .
 
-# Set secure directory permissions
+# Set permissions, configure PHP and create log directory
 RUN chmod -R 755 /app && \
     chmod -R 700 /app/.env* 2>/dev/null || true && \
     chmod -R 700 /app/config 2>/dev/null || true && \
     find /app -type f -name "*.php" -exec chmod 644 {} \; && \
     find /app -type f -name "*.js" -exec chmod 644 {} \; && \
-    find /app -type f -name "*.css" -exec chmod 644 {} \;
-
-# Configure PHP for security
-RUN { \
+    find /app -type f -name "*.css" -exec chmod 644 {} \; && \
+    { \
     echo 'expose_php = Off'; \
     echo 'display_errors = Off'; \
     echo 'display_startup_errors = Off'; \
@@ -66,10 +64,8 @@ RUN { \
     echo 'allow_url_include = Off'; \
     echo 'file_uploads = On'; \
     echo 'upload_tmp_dir = /tmp'; \
-    } > /usr/local/etc/php/conf.d/security.ini
-
-# Create log directory with proper permissions
-RUN mkdir -p /var/log/php && \
+    } > /usr/local/etc/php/conf.d/security.ini && \
+    mkdir -p /var/log/php && \
     chown appuser:appuser /var/log/php && \
     chmod 750 /var/log/php
 

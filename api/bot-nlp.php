@@ -27,7 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 // ── SQLite setup (for embeddings only) ─────────────────────────────
 $dataDir = __DIR__ . '/../data';
-if (!is_dir($dataDir)) mkdir($dataDir, 0750, true);
+if (!is_dir($dataDir)) {
+    mkdir($dataDir, 0750, true);
+}
 $dbPath = $dataDir . '/bot_cache.sqlite';
 
 try {
@@ -73,8 +75,10 @@ match ($action) {
 
 function actionEmbed(PDO $pdo): void {
     $text = trim($_GET['text'] ?? '');
-    if (!$text) { json_err('Missing text'); return; }
-    if (mb_strlen($text) > 2000) { json_err('Text too long (max 2000 chars)'); return; }
+    if (!$text || mb_strlen($text) > 2000) {
+        json_err(!$text ? 'Missing text' : 'Text too long (max 2000 chars)');
+        return;
+    }
 
     $hash = sha1($text);
 
@@ -240,6 +244,7 @@ function actionCacheClear(PDO $pdo): void {
 
 function callHuggingFace(string $text): ?array {
     $url = 'https://api-inference.huggingface.co/models/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2';
+    $raw = null;
 
     if (!function_exists('curl_init')) {
         // Fallback: file_get_contents
@@ -250,7 +255,7 @@ function callHuggingFace(string $text): ?array {
             'timeout' => 25,
             'ignore_errors' => true,
         ]]);
-        $raw = @file_get_contents($url, false, $ctx);
+        $raw = @file_get_contents($url, false, $ctx) ?: null;
     } else {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -261,21 +266,26 @@ function callHuggingFace(string $text): ?array {
             CURLOPT_TIMEOUT        => 25,
             CURLOPT_SSL_VERIFYPEER => true,
         ]);
-        $raw = curl_exec($ch);
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response = curl_exec($ch);
+        $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($code === 503) return null; // Model loading, retry later
+        if ($code !== 503) {
+            $raw = $response ?: null; // 503 = model loading — leave $raw null
+        }
     }
 
-    if (!$raw) return null;
+    if (!$raw) {
+        return null;
+    }
     $data = json_decode($raw, true);
-    if (!$data || !is_array($data)) return null;
+    if (!$data || !is_array($data)) {
+        return null;
+    }
 
     // sentence-transformers returns [[vec]] for single input
-    if (isset($data[0]) && is_array($data[0])) {
-        return is_array($data[0][0]) ? $data[0][0] : $data[0];
-    }
-    return null;
+    return (isset($data[0]) && is_array($data[0]))
+        ? (is_array($data[0][0]) ? $data[0][0] : $data[0])
+        : null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
