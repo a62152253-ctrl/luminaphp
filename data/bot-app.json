@@ -1,0 +1,158 @@
+{
+  "version": "1.0",
+  "app": {
+    "name": "Lumina",
+    "tagline": "Platforma rezerwacji salonów beauty w Polsce",
+    "baseUrl": "/luminaphp/",
+    "roles": ["guest", "client", "owner"]
+  },
+  "pages": {
+    "home": {
+      "title": "Strona główna",
+      "desc": "Wyszukiwarka salonów, kategorie usług, promowane salony.",
+      "hints": ["barber Warszawa", "manicure Kraków", "pokaż promocje"]
+    },
+    "explore": {
+      "title": "Eksploruj",
+      "desc": "Lista i filtry salonów: miasto, kategoria, wyszukiwarka tekstowa.",
+      "params": ["q", "city", "cat"],
+      "hints": ["fryzjer Gdańsk", "kosmetyczka Poznań"]
+    },
+    "map": {
+      "title": "Mapa salonów",
+      "desc": "Salony na mapie OpenStreetMap — wybierz lokalizację i przejdź do profilu.",
+      "hints": ["salony w pobliżu", "mapa Kraków"]
+    },
+    "offers": {
+      "title": "Promocje",
+      "desc": "Aktualne rabaty i oferty specjalne salonów partnerskich.",
+      "hints": ["jakie promocje", "rabaty"]
+    },
+    "dashboard": {
+      "title": "Moje wizyty",
+      "desc": "Panel klienta: nadchodzące i przeszłe rezerwacje, anulowanie.",
+      "auth": true,
+      "hints": ["moje wizyty", "anuluj wizytę"]
+    },
+    "booking": {
+      "title": "Rezerwacja",
+      "desc": "Wybór usługi, pracownika, terminu i potwierdzenie wizyty.",
+      "params": ["id"],
+      "hints": ["umów wizytę", "wybierz termin"]
+    },
+    "business": {
+      "title": "Profil salonu",
+      "desc": "Szczegóły salonu, usługi, opinie, przycisk rezerwacji.",
+      "params": ["id"]
+    },
+    "auth": {
+      "title": "Logowanie / rejestracja",
+      "desc": "Konto Firebase — e-mail, Google. Wymagane do wizyt i lojalności.",
+      "hints": ["zaloguj się", "utwórz konto"]
+    },
+    "admin": {
+      "title": "Panel właściciela",
+      "desc": "Zarządzanie salonem: kalendarz, usługi, pracownicy, raporty.",
+      "auth": true,
+      "role": "owner"
+    },
+    "loyalty": {
+      "title": "Program lojalnościowy",
+      "desc": "Punkty za wizyty, nagrody i status klienta.",
+      "auth": true
+    },
+    "favorites": {
+      "title": "Ulubione salony",
+      "desc": "Zapisane salony do szybkiego powrotu.",
+      "auth": true
+    },
+    "reviews": {
+      "title": "Opinie",
+      "desc": "Oceny i recenzje salonów."
+    },
+    "choice": {
+      "title": "Dla salonów",
+      "desc": "Informacje dla właścicieli — dołączenie salonu do Lumina."
+    },
+    "setup": {
+      "title": "Konfiguracja salonu",
+      "desc": "Kreator profilu biznesowego dla nowych salonów."
+    }
+  },
+  "categories": {
+    "barber": { "label": "Barber", "exploreCat": "Barber" },
+    "nails": { "label": "Paznokcie / manicure", "exploreCat": "Paznokcie" },
+    "hair": { "label": "Fryzjer", "exploreCat": "Fryzjer" },
+    "massage": { "label": "Masaż & SPA", "exploreCat": "Masaż" },
+    "beauty": { "label": "Kosmetyczka", "exploreCat": "Kosmetyczka" },
+    "brows": { "label": "Brwi i rzęsy", "exploreCat": "Brwi i Rzęsy" },
+    "physio": { "label": "Fizjoterapia", "exploreCat": "Fizjoterapia" },
+    "tattoo": { "label": "Tatuaż & piercing", "exploreCat": "Tatuaż" }
+  },
+  "flows": {
+    "book": [
+      "1. Znajdź salon (Eksploruj lub Mapa)",
+      "2. Otwórz profil salonu",
+      "3. Wybierz usługę i termin",
+      "4. Zaloguj się jeśli trzeba",
+      "5. Potwierdź rezerwację w Moje wizyty"
+    ],
+    "owner": [
+      "1. Zarejestruj salon (Dla salonów → Setup)",
+      "2. Uzupełnij usługi i pracowników",
+      "3. Zarządzaj kalendarzem w Panelu"
+    ]
+  },
+  "faqs": [
+    {
+      "id": "what_is_lumina",
+      "patterns": ["co to lumina", "czym jest lumina", "co to za aplikacja", "o aplikacji", "co robi lumina", "platforma lumina"],
+      "answer": "**Lumina** to polska platforma rezerwacji salonów beauty — barber, fryzjer, manicure, masaż, kosmetyka i więcej. Wyszukujesz salon, wybierasz termin i rezerwujesz online bez dzwonienia."
+    },
+    {
+      "id": "how_book",
+      "patterns": ["jak zarezerwowac", "jak umowic wizyte", "jak rezerwowac", "jak zapisac sie", "jak bookowac", "proces rezerwacji", "jak dziala rezerwacja"],
+      "answer": "Rezerwacja w 3 krokach:\n• **Znajdź salon** — Eksploruj lub Mapa\n• **Wybierz usługę i godzinę** na profilu salonu\n• **Potwierdź** — wizyta pojawi się w **Moje wizyty**\n\nNapisz np. „barber Warszawa” — otworzę wyszukiwanie."
+    },
+    {
+      "id": "need_account",
+      "patterns": ["czy musze sie zalogowac", "czy trzeba konto", "bez konta", "konto wymagane", "czy potrzebuje konta"],
+      "answer": "Przeglądanie salonów i mapy działa **bez konta**. Do **rezerwacji**, **ulubionych** i **punktów lojalnościowych** potrzebujesz darmowego konta — mogę Cię przenieść do logowania."
+    },
+    {
+      "id": "cancel",
+      "patterns": ["jak anulowac", "odwolac wizyte", "anulowanie wizyty", "rezygnacja z wizyty"],
+      "answer": "Anulowanie: wejdź w **Moje wizyty** (wymaga logowania), wybierz wizytę i użyj opcji anulowania. Mogę Cię tam teraz przenieść."
+    },
+    {
+      "id": "loyalty_how",
+      "patterns": ["jak dziala lojalnosc", "punkty lojalnosciowe", "nagrody lumina", "program lojalnosciowy jak"],
+      "answer": "**Program lojalnościowy** — zbierasz punkty za wizyty w salonach Lumina. Status i nagrody zobaczysz w zakładce **Lojalność** po zalogowaniu."
+    },
+    {
+      "id": "payment",
+      "patterns": ["platnosc", "jak placic", "paypal", "czy placi sie online", "faktura"],
+      "answer": "Płatności zależą od salonu — część przyjmuje online (PayPal), inne przy wizycie. Szczegóły są przy rezerwacji i w sekcji płatności konta."
+    },
+    {
+      "id": "owner_join",
+      "patterns": ["dolaczyc salon", "wlasciciel salonu", "dla salonow", "jak dodac salon", "rejestracja salonu"],
+      "answer": "Właściciel salonu: wejdź w **Dla salonów** → utwórz profil w kreatorze **Setup** → zarządzaj w **Panelu właściciela** (kalendarz, usługi, pracownicy)."
+    },
+    {
+      "id": "categories_list",
+      "patterns": ["jakie kategorie", "jakie uslugi", "co oferujecie", "rodzaje salonow"],
+      "answer": "Kategorie w Lumina:\n• **Barber** · **Fryzjer** · **Manicure/paznokcie**\n• **Masaż & SPA** · **Kosmetyczka**\n• **Brwi i rzęsy** · **Fizjoterapia** · **Tatuaż**\n\nNapisz np. „masaż Wrocław”."
+    }
+  ],
+  "pagePrompts": {
+    "home": ["Chcesz znaleźć salon? Napisz miasto i usługę.", "Sprawdź **Promocje** lub **Mapę**."],
+    "explore": ["Użyj filtrów albo napisz: „barber + miasto”.", "Kliknij salon, by zarezerwować wizytę."],
+    "map": ["Kliknij pinezkę salonu na mapie.", "Powiedz miasto — zawężę widok."],
+    "dashboard": ["Tu zarządzasz wizytami.", "Napisz „anuluj wizytę” jeśli potrzebujesz pomocy."],
+    "booking": ["Wybierz usługę, pracownika i dogodny termin.", "Po potwierdzeniu sprawdź **Moje wizyty**."],
+    "admin": ["Panel właściciela — kalendarz i raporty.", "Potrzebujesz pomocy z usługami lub pracownikami?"],
+    "auth": ["Zaloguj się e-mailem lub Google.", "Nowe konto — rejestracja zajmuje chwilę."],
+    "offers": ["Przeglądaj rabaty i kliknij ofertę, by przejść do salonu."]
+  }
+}

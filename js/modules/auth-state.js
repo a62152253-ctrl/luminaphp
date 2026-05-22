@@ -25,7 +25,6 @@ export function authErrorMessage(error) {
 
 // ===== LOGIN =====
 export async function login() {
-  // Re-throw so callers (auth-page.js) can surface the error themselves.
   await signInWithPopup(auth, googleProvider);
 }
 
@@ -34,15 +33,12 @@ export async function loginWithEmail(email, password) {
 }
 
 // ===== REGISTER =====
-export async function registerClient(name, email, password) {
+export async function registerClient(name, email, password, phone = '') {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name });
-  await setDoc(doc(db, 'users', cred.user.uid), {
-    role: 'client',
-    displayName: name,
-    email,
-    createdAt: serverTimestamp(),
-  });
+  const data = { role: 'client', displayName: name, email, createdAt: serverTimestamp() };
+  if (phone) data.phone = phone;
+  await setDoc(doc(db, 'users', cred.user.uid), data);
   return cred.user;
 }
 
@@ -141,9 +137,7 @@ export async function loadUserDoc(uid, user = null) {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     if (snap.exists()) return { uid, ...snap.data() };
-    // During active registration/login the caller creates the doc — don't race it
     if (window._authBusy) return { uid, role: null };
-    // No doc yet (new Google sign-in) — create default client doc
     const defaults = {
       role: 'client',
       displayName: user?.displayName || '',
@@ -184,12 +178,17 @@ export function renderHeader(user) {
   }
 }
 
+function setAvatarFallback(img, name) {
+  img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name||'U')}&background=6366f1&color=fff`;
+  img.onerror = null;
+}
+
 function updateHeaderUser(user) {
   const avatar = document.getElementById('userAvatar');
   const name   = document.getElementById('userName');
   if (avatar) {
     avatar.src = user.photoURL || '';
-    avatar.onerror = () => { avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6366f1&color=fff`; avatar.onerror = null; };
+    avatar.onerror = () => setAvatarFallback(avatar, user.displayName);
   }
   if (name) name.textContent = user.displayName || user.email;
 }
@@ -221,7 +220,7 @@ export function renderSidebar(user) {
   const sn = document.getElementById('sidebarName');
   if (sa) {
     sa.src = user.photoURL || '';
-    sa.onerror = () => { sa.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName||'U')}&background=6366f1&color=fff`; sa.onerror = null; };
+    sa.onerror = () => setAvatarFallback(sa, user.displayName);
   }
   if (sn) sn.textContent = user.displayName || user.email;
 }

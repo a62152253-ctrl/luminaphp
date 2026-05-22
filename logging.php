@@ -18,6 +18,11 @@ $logChannel = $_ENV['LOG_CHANNEL'] ?? 'single';
 $slackWebhook = $_ENV['LOG_SLACK_WEBHOOK_URL'] ?? '';
 $sentryDsn = $_ENV['SENTRY_DSN'] ?? '';
 
+// Optional Sentry integration
+if ($sentryDsn && class_exists('Sentry\\Sentry')) {
+    \Sentry\Sentry::init(['dsn' => $sentryDsn]);
+}
+
 $levelPriority = [
     'debug'     => 0,
     'info'      => 1,
@@ -64,9 +69,13 @@ function lumina_notify_slack(string $webhook, string $text, array $context = [])
             'footer' => gethostname(),
             'ts'     => time(),
         ]],
-    ]);
+    ], JSON_THROW_ON_ERROR);
 
     $ch = curl_init($webhook);
+    if ($ch === false) {
+        return;
+    }
+    
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $payload,
@@ -74,32 +83,16 @@ function lumina_notify_slack(string $webhook, string $text, array $context = [])
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 5,
     ]);
-    curl_exec($ch);
-    curl_close($ch);
+    
+    try {
+        curl_exec($ch);
+    } catch (\Exception $e) {
+        // Silently fail - don't break the app if Slack notification fails
+    } finally {
+        curl_close($ch);
+    }
 }
 
-set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
-    $level = match ($errno) {
-        E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR => 'error',
-        E_WARNING, E_CORE_WARNING, E_COMPILE_WARNING, E_USER_WARNING => 'warning',
-        E_NOTICE, E_USER_NOTICE, E_DEPRECATED, E_USER_DEPRECATED => 'notice',
-        default => 'debug',
-    };
-    lumina_log($level, $errstr, ['file' => $errfile, 'line' => $errline, 'code' => $errno]);
-    return false;
-});
-
-set_exception_handler(function (Throwable $e): void {
-    lumina_log('critical', $e->getMessage(), [
-        'exception' => get_class($e),
-        'file'      => $e->getFile(),
-        'line'      => $e->getLine(),
-        'trace'     => $e->getTraceAsString(),
-    ]);
-    if (!headers_sent()) {
-        http_response_code(500);
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Internal Server Error']);
-    }
-    exit(1);
-});
+// Handlers are registered in error-handling.php (loaded after this file) so they
+// have access to render_error_page(). Do not register handlers here to avoid them
+// being silently replaced.

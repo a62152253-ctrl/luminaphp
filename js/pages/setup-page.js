@@ -136,7 +136,6 @@ function validateStep(step) {
   if (step === 1) {
     if (!name) { window.setupShowError?.('Podaj nazwę salonu.'); return false; }
     if (!category) { window.setupShowError?.('Wybierz branżę.'); return false; }
-    if (!isValidNip(nip)) { window.setupShowError?.('Podaj prawidłowy NIP firmy.'); return false; }
   }
 
   if (step === 2) {
@@ -217,8 +216,7 @@ function fillHours(hours) {
 function updateLaunchChecklist() {
   const nip = normalizeNip(document.getElementById('setupNip')?.value);
   const identity = !!cleanText(document.getElementById('setupName')?.value, 80)
-    && !!document.getElementById('setupCategory')?.value
-    && isValidNip(nip);
+    && !!document.getElementById('setupCategory')?.value;
   const location = !!cleanText(document.getElementById('setupCity')?.value, 64)
     && /\d/.test(cleanText(document.getElementById('setupAddress')?.value, 120));
   const content = cleanText(document.getElementById('setupDesc')?.value, 700).length >= 80
@@ -282,9 +280,11 @@ async function finishSetup(bizId) {
     return;
   }
 
-  if (btn) btn.textContent = 'Weryfikacja NIP…';
-  const nipErr = await checkNipUnique(nip, bizId);
-  if (nipErr) { showSetupErr(btn, nipErr); return; }
+  if (nip) {
+    if (btn) btn.textContent = 'Weryfikacja NIP…';
+    const nipErr = await checkNipUnique(nip, bizId);
+    if (nipErr) { showSetupErr(btn, nipErr); return; }
+  }
 
   let lat = parseFloat(document.getElementById('setupLat')?.value) || null;
   let lng = parseFloat(document.getElementById('setupLng')?.value) || null;

@@ -59,6 +59,42 @@ function renderPopularCategories() {
     </a>`).join('');
 }
 
+let _featuredSwiper = null;
+let _promosSwiper   = null;
+
+function initSwipers() {
+  const wait = (cb) => {
+    if (window.Swiper) { cb(); return; }
+    const t = setInterval(() => { if (window.Swiper) { clearInterval(t); cb(); } }, 80);
+  };
+
+  wait(() => {
+    if (!_featuredSwiper) {
+      _featuredSwiper = new Swiper('.featured-swiper', {
+        slidesPerView: 1.1, spaceBetween: 16, centeredSlides: false,
+        pagination: { el: '.featured-swiper-pagination', clickable: true },
+        navigation: { nextEl: '.featured-swiper-next', prevEl: '.featured-swiper-prev' },
+        breakpoints: {
+          640:  { slidesPerView: 2.1, spaceBetween: 20 },
+          1024: { slidesPerView: 3,   spaceBetween: 24, centeredSlides: false },
+        },
+        a11y: { prevSlideMessage: 'Poprzedni salon', nextSlideMessage: 'Następny salon' },
+      });
+    }
+    if (!_promosSwiper) {
+      _promosSwiper = new Swiper('.promos-swiper', {
+        slidesPerView: 1.1, spaceBetween: 16,
+        pagination: { el: '.promos-swiper-pagination', clickable: true },
+        breakpoints: {
+          640:  { slidesPerView: 2.1, spaceBetween: 20 },
+          1024: { slidesPerView: 3,   spaceBetween: 24 },
+        },
+        a11y: { prevSlideMessage: 'Poprzednia promocja', nextSlideMessage: 'Następna promocja' },
+      });
+    }
+  });
+}
+
 export async function initHome() {
   bindSearch();
   _homeBusinesses = await loadBusinesses();
@@ -66,6 +102,7 @@ export async function initHome() {
   renderRecentlyViewed();
   renderPopularCategories();
   await loadPromos();
+  initSwipers();
 
   // Override toggleFav to re-render hearts on home page
   const origToggle = window.toggleFav;
@@ -74,6 +111,7 @@ export async function initHome() {
     if (!user) { window.location.href = '/luminaphp/?page=auth'; return; }
     window.App.favorites = await toggleFavorite(user.uid, bizId, window.App.favorites);
     renderFeatured(_homeBusinesses);
+    if (_featuredSwiper) _featuredSwiper.update();
     if (typeof origToggle === 'function') origToggle(bizId);
   };
 }
@@ -97,6 +135,7 @@ function renderFeatured(businesses) {
   grid.innerHTML = featured.map(b => {
     const isFav = favIds.includes(b.id);
     return `
+    <div class="swiper-slide">
     <a href="?page=business&id=${b.id}" class="salon-booksy-card">
       <div class="salon-booksy-img">
         <img src="${b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&auto=format&fit=crop'}" alt="${b.name}" loading="lazy">
@@ -114,8 +153,10 @@ function renderFeatured(businesses) {
         <div class="salon-booksy-price">${b.address || ''}</div>
         <button class="salon-booksy-book">Umów wizytę</button>
       </div>
-    </a>`;
+    </a>
+    </div>`;
   }).join('');
+  if (_featuredSwiper) _featuredSwiper.update();
 }
 
 async function loadPromos() {
@@ -144,6 +185,7 @@ async function loadPromos() {
       const pct = p.discountPercent || Math.round((1 - p.discountPrice / p.originalPrice) * 100);
       const photo = p.photoURL || p.bizPhotoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&auto=format&fit=crop';
       return `
+      <div class="swiper-slide">
       <a href="?page=business&id=${p.businessId}" class="promo-booksy-card">
         <div class="promo-booksy-tag">-${pct}%</div>
         <div class="promo-booksy-img">
@@ -157,8 +199,10 @@ async function loadPromos() {
             <span class="promo-old">${p.originalPrice} zł</span>
           </div>
         </div>
-      </a>`;
+      </a>
+      </div>`;
     }).join('');
+    if (_promosSwiper) _promosSwiper.update();
   } catch(e) {
     if (section) section.style.display = '';
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:2rem 0">

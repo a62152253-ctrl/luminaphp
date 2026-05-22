@@ -1,84 +1,6 @@
-import { login, loginWithEmail, registerClient, registerBusiness,
-         registerClientWithPhone, loadUserDoc }
+import { login, loginWithEmail, registerClient, registerBusiness, loadUserDoc }
   from '../modules/auth-state.js';
-import { db, doc, getDoc,
-         auth, RecaptchaVerifier, signInWithPhoneNumber }
-  from '../firebase-config.js';
-
-// ===== PHONE VERIFICATION STATE =====
-let _confirmationResult = null;
-let _phoneUser = null;
-let _phoneVerified = false;
-let _recaptchaVerifier = null;
-
-window.authResetPhone = () => {
-  _confirmationResult = null;
-  _phoneUser = null;
-  _phoneVerified = false;
-  _recaptchaVerifier = null;
-  const smsField = document.getElementById('smsCodeField');
-  const badge    = document.getElementById('phoneVerifiedBadge');
-  const phoneEl  = document.getElementById('phoneField');
-  const btn      = document.getElementById('btnSendSms');
-  if (smsField)  { smsField.style.display = 'none'; }
-  if (badge)     { badge.style.display = 'none'; }
-  if (phoneEl)   { phoneEl.style.opacity = ''; phoneEl.style.pointerEvents = ''; }
-  if (btn)       { btn.disabled = false; btn.textContent = 'Wyślij kod'; }
-};
-
-window.authSendSms = async () => {
-  hideError();
-  const phone = document.getElementById('regPhone')?.value.trim();
-  if (!phone) { showError('Podaj numer telefonu w formacie +48 XXX XXX XXX.'); return; }
-
-  const btn = document.getElementById('btnSendSms');
-  if (btn) { btn.disabled = true; btn.textContent = 'Wysyłam…'; }
-
-  try {
-    if (!_recaptchaVerifier) {
-      _recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptchaContainer', {
-        size: 'invisible',
-        callback: () => {},
-      });
-    }
-    _confirmationResult = await signInWithPhoneNumber(auth, phone, _recaptchaVerifier);
-    document.getElementById('smsCodeField').style.display = '';
-    document.getElementById('regSmsCode')?.focus();
-    if (btn) { btn.disabled = false; btn.textContent = 'Wyślij ponownie'; }
-  } catch (e) {
-    showError(firebaseErrorPl(e.code, e.message));
-    _recaptchaVerifier = null; // must recreate after error
-    if (btn) { btn.disabled = false; btn.textContent = 'Wyślij kod'; }
-  }
-};
-
-window.authVerifySms = async () => {
-  hideError();
-  const code = document.getElementById('regSmsCode')?.value.trim();
-  if (!_confirmationResult) { showError('Najpierw wyślij kod SMS.'); return; }
-  if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
-    showError('Wpisz 6-cyfrowy kod z SMS.');
-    return;
-  }
-
-  const btn = document.getElementById('btnVerifySms');
-  if (btn) { btn.disabled = true; btn.textContent = 'Weryfikuję…'; }
-
-  try {
-    const cred = await _confirmationResult.confirm(code);
-    _phoneUser = cred.user;
-    _phoneVerified = true;
-
-    document.getElementById('smsCodeField').style.display = 'none';
-    const badge   = document.getElementById('phoneVerifiedBadge');
-    const phoneEl = document.getElementById('phoneField');
-    if (badge)   badge.style.display = 'flex';
-    if (phoneEl) { phoneEl.style.opacity = '.6'; phoneEl.style.pointerEvents = 'none'; }
-  } catch (e) {
-    showError(firebaseErrorPl(e.code, e.message));
-    if (btn) { btn.disabled = false; btn.textContent = 'Weryfikuj'; }
-  }
-};
+import { db, doc, getDoc } from '../firebase-config.js';
 
 // ===== UI HELPERS =====
 function showError(msg) {
@@ -120,7 +42,6 @@ async function redirectAfterAuth(user) {
     } else if (userDoc.role === 'client') {
       window.location.href = '/luminaphp/?page=dashboard';
     } else {
-      // role null: Firestore unavailable or registration in progress — reset UI
       window._authBusy = false;
       setLoading('btnLogin', false, 'Zaloguj');
       setLoading('btnRegister', false, 'Utwórz konto');
@@ -151,7 +72,6 @@ window.authLogin = async () => {
   if (!email)    { showError('Wpisz adres e-mail.');  return; }
   if (!password) { showError('Wpisz hasło.');          return; }
 
-  // Block app.js from redirecting — auth-page.js handles it with fresh data
   window._authBusy = true;
   setLoading('btnLogin', true);
   try {
@@ -169,7 +89,6 @@ window.authGoogle = async () => {
   hideError();
   const btn = document.querySelector('.auth-panel.active .auth-google');
   if (btn) { btn.disabled = true; btn.textContent = 'Otwieranie okna…'; }
-
   try {
     await login();
   } catch(e) {
@@ -190,11 +109,11 @@ window.authGoogle = async () => {
 };
 
 function validateRegisterBase(name, email, password) {
-  if (!name)               return 'Podaj imię i nazwisko.';
-  if (!email)              return 'Podaj adres e-mail.';
-  if (!password)           return 'Podaj hasło.';
-  if (password.length < 8) return 'Hasło musi mieć min. 8 znaków.';
-  if (!/[0-9]/.test(password)) return 'Hasło musi zawierać co najmniej jedną cyfrę.';
+  if (!name)                    return 'Podaj imię i nazwisko.';
+  if (!email)                   return 'Podaj adres e-mail.';
+  if (!password)                return 'Podaj hasło.';
+  if (password.length < 8)      return 'Hasło musi mieć min. 8 znaków.';
+  if (!/[0-9]/.test(password))  return 'Hasło musi zawierać co najmniej jedną cyfrę.';
   return null;
 }
 
@@ -209,33 +128,32 @@ window.authRegister = async () => {
   const baseErr = validateRegisterBase(name, email, password);
   if (baseErr) { showError(baseErr); return; }
 
-  let bizName, category, city;
   if (isBiz) {
-    bizName  = document.getElementById('regBizName')?.value.trim();
-    category = document.getElementById('regBizCategory')?.value;
-    city     = document.getElementById('regBizCity')?.value.trim();
-    if (!bizName)  { showError('Podaj nazwę salonu.');   return; }
-    if (!category) { showError('Wybierz branżę.');       return; }
-    if (!city)     { showError('Podaj miasto salonu.');  return; }
-  }
+    const bizName  = document.getElementById('regBizName')?.value.trim();
+    const category = document.getElementById('regBizCategory')?.value;
+    const city     = document.getElementById('regBizCity')?.value.trim();
+    if (!bizName)  { showError('Podaj nazwę salonu.');  return; }
+    if (!category) { showError('Wybierz branżę.');      return; }
+    if (!city)     { showError('Podaj miasto salonu.'); return; }
 
-  if (!isBiz && !_phoneVerified) {
-    showError('Zweryfikuj numer telefonu SMS-em przed utworzeniem konta.');
-    document.getElementById('regPhone')?.focus();
+    window._authBusy = true;
+    setLoading('btnRegister', true);
+    try {
+      const user = await registerBusiness({ ownerName: name, bizName, category, city, email, password });
+      window._authBusy = false;
+      await redirectAfterAuth(user);
+    } catch(e) {
+      window._authBusy = false;
+      showError(firebaseErrorPl(e.code, e.message));
+      setLoading('btnRegister', false);
+    }
     return;
   }
 
   window._authBusy = true;
   setLoading('btnRegister', true);
-
   try {
-    let user;
-    if (isBiz) {
-      user = await registerBusiness({ ownerName: name, bizName, category, city, email, password });
-    } else {
-      // Phone user is already signed in from SMS confirmation — link email+password to it
-      user = await registerClientWithPhone(name, email, password, _phoneUser);
-    }
+    const user = await registerClient(name, email, password);
     window._authBusy = false;
     await redirectAfterAuth(user);
   } catch(e) {
@@ -289,9 +207,9 @@ function updatePasswordStrength(pw) {
   const bars = document.querySelectorAll('#pwStrength .pw-bar');
   if (!bars.length) return;
   let score = 0;
-  if (pw.length >= 8)  score++;
-  if (pw.length >= 12) score++;
-  if (/[0-9]/.test(pw)) score++;
+  if (pw.length >= 8)           score++;
+  if (pw.length >= 12)          score++;
+  if (/[0-9]/.test(pw))        score++;
   if (/[^a-zA-Z0-9]/.test(pw)) score++;
   score = Math.min(score, 3);
   const cls = score >= 3 ? 'strong' : score >= 2 ? 'medium' : pw.length ? 'weak' : '';
@@ -304,36 +222,24 @@ function updatePasswordStrength(pw) {
 // ===== FIREBASE ERROR CODES =====
 function firebaseErrorPl(code, fallbackMsg = '') {
   const map = {
-    'auth/invalid-credential':          'Nieprawidłowy e-mail lub hasło.',
-    'auth/invalid-login-credentials':   'Nieprawidłowy e-mail lub hasło.',
-    'auth/INVALID_LOGIN_CREDENTIALS':   'Nieprawidłowy e-mail lub hasło.',
-    'auth/wrong-password':              'Nieprawidłowe hasło.',
-    'auth/user-not-found':              'Nie znaleziono konta z tym adresem e-mail.',
-    'auth/email-already-in-use':        'Ten adres e-mail jest już zajęty.',
-    'auth/email-already-exists':        'Ten adres e-mail jest już zajęty.',
-    'auth/invalid-email':               'Nieprawidłowy format adresu e-mail.',
-    'auth/weak-password':               'Hasło jest za słabe (min. 8 znaków + cyfra).',
-    'auth/missing-password':            'Wpisz hasło.',
-    'auth/missing-email':               'Wpisz adres e-mail.',
-    'auth/too-many-requests':           'Zbyt wiele prób logowania. Odczekaj chwilę i spróbuj ponownie.',
-    'auth/network-request-failed':      'Błąd sieci. Sprawdź połączenie z internetem.',
-    'auth/popup-blocked':               'Przeglądarka zablokowała okno popup. Zezwól na popupy dla tej strony.',
-    'auth/popup-closed-by-user':        '',
-    'auth/cancelled-popup-request':     '',
-    'auth/unauthorized-domain':         'Ta domena nie jest autoryzowana w Firebase. Dodaj ją w konsoli Firebase → Authentication → Settings.',
-    'auth/user-disabled':               'To konto zostało zablokowane. Skontaktuj się z administratorem.',
-    'auth/account-exists-with-different-credential':
-                                        'Konto z tym e-mailem istnieje już z inną metodą logowania.',
-    'auth/operation-not-allowed':       'Ta metoda logowania nie jest włączona.',
-    'auth/id-token-expired':            'Sesja wygasła. Zaloguj się ponownie.',
-    'auth/requires-recent-login':       'Ta operacja wymaga ponownego logowania.',
-    'auth/invalid-phone-number':        'Nieprawidłowy numer telefonu. Użyj formatu +48XXXXXXXXX.',
-    'auth/missing-phone-number':        'Podaj numer telefonu.',
-    'auth/quota-exceeded':              'Przekroczono limit SMS. Spróbuj ponownie za jakiś czas.',
-    'auth/code-expired':                'Kod SMS wygasł. Wyślij nowy kod.',
-    'auth/invalid-verification-code':   'Nieprawidłowy kod SMS. Sprawdź i spróbuj ponownie.',
-    'auth/session-expired':             'Sesja wygasła. Wyślij kod SMS ponownie.',
-    'auth/provider-already-linked':     'Ten numer telefonu jest już powiązany z innym kontem.',
+    'auth/invalid-credential':        'Nieprawidłowy e-mail lub hasło.',
+    'auth/invalid-login-credentials': 'Nieprawidłowy e-mail lub hasło.',
+    'auth/wrong-password':            'Nieprawidłowe hasło.',
+    'auth/user-not-found':            'Nie znaleziono konta z tym adresem e-mail.',
+    'auth/email-already-in-use':      'Ten adres e-mail jest już zajęty.',
+    'auth/invalid-email':             'Nieprawidłowy format adresu e-mail.',
+    'auth/weak-password':             'Hasło jest za słabe (min. 8 znaków + cyfra).',
+    'auth/missing-password':          'Wpisz hasło.',
+    'auth/missing-email':             'Wpisz adres e-mail.',
+    'auth/too-many-requests':         'Zbyt wiele prób logowania. Odczekaj chwilę.',
+    'auth/network-request-failed':    'Błąd sieci. Sprawdź połączenie z internetem.',
+    'auth/popup-blocked':             'Przeglądarka zablokowała popup. Zezwól na popupy dla tej strony.',
+    'auth/popup-closed-by-user':      '',
+    'auth/cancelled-popup-request':   '',
+    'auth/unauthorized-domain':       'Ta domena nie jest autoryzowana w Firebase.',
+    'auth/user-disabled':             'To konto zostało zablokowane.',
+    'auth/operation-not-allowed':     'Ta metoda logowania nie jest włączona.',
+    'auth/requires-recent-login':     'Ta operacja wymaga ponownego logowania.',
   };
   const msg = map[code];
   if (msg !== undefined) return msg || null;
@@ -348,22 +254,18 @@ export function initAuth() {
     return;
   }
 
-  // Enter key — login form
   ['loginEmail', 'loginPassword'].forEach(id => {
     document.getElementById(id)?.addEventListener('keydown', e => {
       if (e.key === 'Enter') window.authLogin();
     });
   });
 
-  // Enter key — register form (last field triggers submit)
   document.getElementById('regPassword')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') window.authRegister();
   });
   document.getElementById('regBizCity')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') window.authRegister();
   });
-
-  // Password strength meter
   document.getElementById('regPassword')?.addEventListener('input', e => {
     updatePasswordStrength(e.target.value);
   });

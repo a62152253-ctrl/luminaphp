@@ -19,7 +19,8 @@
         </header>
         <div id="chatMessages" class="chat-messages"></div>
         <form id="chatForm" class="chat-form">
-          <input type="text" id="chatInput" placeholder="Napisz wiadomość…" autocomplete="off">
+          <label for="chatInput" class="sr-only">Wpisz wiadomość</label>
+          <input type="text" id="chatInput" placeholder="Napisz wiadomość…" autocomplete="off" aria-label="Wpisz wiadomość">
           <button type="submit" class="btn btn-accent"><span class="material-icons">send</span></button>
         </form>
       </div>

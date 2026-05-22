@@ -36,7 +36,7 @@ RUN addgroup -g 1000 appuser && \
 WORKDIR /app
 
 # Copy application from builder
-COPY --from=builder /app/vendor ./vendor 2>/dev/null || true
+COPY --from=builder /app/vendor ./vendor
 
 # Copy application code
 COPY --chown=appuser:appuser . .
@@ -75,7 +75,7 @@ RUN mkdir -p /var/log/php && \
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:9000/ping || exit 1
+    CMD pgrep php-fpm || exit 1
 
 # Switch to non-root user
 USER appuser

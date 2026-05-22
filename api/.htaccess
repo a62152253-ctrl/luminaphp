@@ -1,0 +1,11 @@
+# Allow PHP execution in api/ directory
+<Files "*.php">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</Files>
+
+# JSON responses — disable extra headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>

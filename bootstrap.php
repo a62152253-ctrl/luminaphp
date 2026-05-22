@@ -50,6 +50,7 @@ foreach (['storage/logs', 'storage/cache', 'storage/uploads'] as $dir) {
 
 require_once __DIR__ . '/logging.php';
 require_once __DIR__ . '/error-handling.php';
+require_once __DIR__ . '/functions/layout.php';
 
 // ─── 5. Session ───────────────────────────────────────────────────────────────
 
@@ -81,17 +82,29 @@ if (session_status() === PHP_SESSION_NONE) {
 // ─── 6. Security headers ──────────────────────────────────────────────────────
 
 if (filter_var($_ENV['SECURITY_HEADERS_ENABLED'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
-    $csp         = $_ENV['CONTENT_SECURITY_POLICY']
-        ?? "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;";
-    $frameOpts   = $_ENV['X_FRAME_OPTIONS'] ?? 'SAMEORIGIN';
+    $csp = $_ENV['CONTENT_SECURITY_POLICY'] ?? implode('; ', [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net https://accounts.google.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net",
+        "img-src 'self' data: blob: https:",
+        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
+        "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebase.googleapis.com https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://api-m.paypal.com https://api-m.sandbox.paypal.com https://*.paypal.com",
+        "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.paypal.com",
+        "worker-src 'self' blob:",
+    ]);
+    $frameOpts = $_ENV['X_FRAME_OPTIONS'] ?? 'SAMEORIGIN';
 
     header('X-Content-Type-Options: nosniff');
-    header('X-XSS-Protection: 1; mode=block');
+    header('X-XSS-Protection: 0'); // Disabled: CSP is the correct XSS defense; the old mode=block causes issues in IE
     header("X-Frame-Options: {$frameOpts}");
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header("Content-Security-Policy: {$csp}");
-    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+    header('Permissions-Policy: geolocation=(self), microphone=(), camera=()');
+    header('Cross-Origin-Opener-Policy: same-origin-allow-popups'); // Allow Google OAuth popups
     header_remove('X-Powered-By');
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
 }
 
 // ─── 7. CORS ─────────────────────────────────────────────────────────────────

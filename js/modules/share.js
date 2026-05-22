@@ -29,8 +29,9 @@ export async function copyLink(url) {
 export function generateQRCode(url, containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
+  // Use quickchart.io — allowed by CSP img-src https:
   const encoded = encodeURIComponent(url);
-  el.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}" alt="QR Code" width="200" height="200">`;
+  el.innerHTML = `<img src="https://quickchart.io/qr?text=${encoded}&size=200" alt="QR Code" width="200" height="200" loading="lazy">`;
 }
 
 export async function trackShare(method, url) {

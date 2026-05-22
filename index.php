@@ -1,11 +1,13 @@
 <?php
 require_once __DIR__ . '/bootstrap.php';
 
-$page      = $_GET['page'] ?? 'home';
+// Support both ?page= and rewrite rule ?url= parameters
+$page      = $_GET['page'] ?? $_GET['url'] ?? 'home';
+$page      = rtrim($page, '/'); // Remove trailing slash
 $bizId     = $_GET['id']   ?? '';
 $activeCat = $_GET['cat']  ?? '';
 $validPages = ['home','explore','business','choice','admin','auth','booking','services','employees','gallery','setup','dashboard',
-  'profile','reviews','offers','notifications','favorites','map','chat','loyalty','invoice','referral'];
+  'profile','reviews','offers','notifications','favorites','map','chat','loyalty','invoice','referral','marketplace'];
 if (!in_array($page, $validPages)) { $page = 'home'; }
 
 $titles = [
@@ -30,7 +32,8 @@ $titles = [
   'chat'       => 'Wiadomości | Lumina',
   'loyalty'    => 'Lojalność | Lumina',
   'invoice'    => 'Płatności | Lumina',
-  'referral'   => 'Polecenia | Lumina',
+  'referral'    => 'Polecenia | Lumina',
+  'marketplace' => 'Marketplace | Lumina',
 ];
 $title = $titles[$page];
 
@@ -66,44 +69,43 @@ function navSuffix(string $p, string $cur): string {
   <meta name="twitter:card"       content="summary_large_image">
   <meta name="twitter:title"      content="<?= htmlspecialchars($title) ?>">
   <title><?= htmlspecialchars($title) ?></title>
-  <link rel="preload" href="/luminaphp/css/style.css" as="style">
-  <link rel="preload" href="/luminaphp/js/app.js"     as="script" crossorigin>
-  <?php if ($page === 'home'): ?>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"Lumina","url":"<?= (isset($_SERVER['HTTPS'])&&$_SERVER['HTTPS']==='on'?'https':'http').'://'.$_SERVER['HTTP_HOST'].'/luminaphp/' ?>","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"<?= (isset($_SERVER['HTTPS'])&&$_SERVER['HTTPS']==='on'?'https':'http').'://'.$_SERVER['HTTP_HOST'] ?>/luminaphp/?page=explore&q={search_term_string}"},"query-input":"required name=search_term_string"}}
-  </script>
-  <?php endif; ?>
+  <link rel="preload" href="<?= lumina_asset('/css/main.css') ?>" as="style">
+  <link rel="preload" href="<?= lumina_asset('/js/app.js') ?>" as="script" crossorigin>
+  <?php if ($page === 'home'):
+    $baseUrl = rtrim($_ENV['APP_URL'] ?? '', '/');
+    if ($baseUrl === '') {
+        $scheme  = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $host    = preg_replace('/[^a-zA-Z0-9.\-:]/', '', $_SERVER['HTTP_HOST'] ?? 'localhost');
+        $baseUrl = "{$scheme}://{$host}/luminaphp";
+    }
+    $schemaUrl = $baseUrl . '/';
+    $searchUrl = $baseUrl . '/?page=explore&q={search_term_string}';
+    $schema = json_encode([
+        '@context' => 'https://schema.org',
+        '@type'    => 'WebSite',
+        'name'     => 'Lumina',
+        'url'      => $schemaUrl,
+        'potentialAction' => [
+            '@type'       => 'SearchAction',
+            'target'      => ['@type' => 'EntryPoint', 'urlTemplate' => $searchUrl],
+            'query-input' => 'required name=search_term_string',
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+?>
+  <script type="application/ld+json"><?= $schema ?></script>
+<?php endif; ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/luminaphp/css/material-icons.css">
-  <link rel="stylesheet" href="/luminaphp/css/style.css">
-  <link rel="stylesheet" href="/luminaphp/css/premium.css">
-  <link rel="stylesheet" href="/luminaphp/css/pro-theme.css">
-  <?php if (in_array($page, ['admin','employees','services'])): ?>
-  <link rel="stylesheet" href="/luminaphp/css/admin.css">
-  <link rel="stylesheet" href="/luminaphp/css/admin-enhanced.css">
-  <?php endif; ?>
-  <?php if ($page === 'gallery'): ?>
-  <link rel="stylesheet" href="/luminaphp/css/admin-enhanced.css">
-  <?php endif; ?>
-  <?php if ($page === 'auth' || $page === 'setup'): ?>
-  <link rel="stylesheet" href="/luminaphp/css/auth.css">
-  <?php endif; ?>
-  <?php if ($page === 'dashboard'): ?>
-  <link rel="stylesheet" href="/luminaphp/css/dashboard.css">
-  <link rel="stylesheet" href="/luminaphp/css/dashboard-pro.css">
-  <?php endif; ?>
-  <?php if (in_array($page, ['business','booking'])): ?>
-  <link rel="stylesheet" href="/luminaphp/css/business.css">
-  <?php endif; ?>
-  <?php if (in_array($page, ['explore','business','map'])): ?>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <?php endif; ?>
-  <?php if (in_array($page, ['profile','reviews','offers','notifications','favorites','map','chat','loyalty','invoice','referral'])): ?>
-  <link rel="stylesheet" href="/luminaphp/css/features.css">
-  <?php endif; ?>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<?php foreach (lumina_stylesheets($page) as $sheet): ?>
+  <?= lumina_link_tag($sheet) . "\n" ?>
+<?php endforeach; ?>
+<?php foreach (lumina_head_scripts($page) as $src): ?>
+  <script src="<?= htmlspecialchars($src, ENT_QUOTES, 'UTF-8') ?>" defer></script>
+<?php endforeach; ?>
+<?php if ($page === 'home'): ?>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+<?php endif; ?>
 </head>
 <body>
 
@@ -120,6 +122,7 @@ function navSuffix(string $p, string $cur): string {
       <a href="/luminaphp/?page=choice" <?= navActive('choice', $page) ?>>Dla Salonów</a>
       <a href="/luminaphp/?page=map" <?= navActive('map', $page) ?>>Mapa</a>
       <a href="/luminaphp/?page=offers" <?= navActive('offers', $page) ?>>Promocje</a>
+      <a href="/luminaphp/?page=marketplace" <?= navActive('marketplace', $page) ?>>Marketplace</a>
       <a href="/luminaphp/?page=dashboard" class="nav-dashboard hidden<?= navSuffix('dashboard', $page) ?>" data-role="client">Moje Wizyty</a>
       <a href="/luminaphp/?page=admin" id="navBizPanel" class="hidden<?= navSuffix('admin', $page) ?>" data-role="business">Panel Salonu</a>
       <a href="/luminaphp/?page=services" class="hidden<?= navSuffix('services', $page) ?>" data-role="business" data-sub="services">Usługi</a>
@@ -229,6 +232,9 @@ function navSuffix(string $p, string $cur): string {
       <a href="/luminaphp/?page=choice" class="mobile-nav-link<?= navSuffix('choice', $page) ?>">
         <span class="material-icons">store</span>Dla Salonów
       </a>
+      <a href="/luminaphp/?page=marketplace" class="mobile-nav-link<?= navSuffix('marketplace', $page) ?>">
+        <span class="material-icons">storefront</span>Marketplace
+      </a>
       <div class="mobile-nav-sep"></div>
       <a href="/luminaphp/?page=dashboard" class="mobile-nav-link nav-dashboard hidden<?= navSuffix('dashboard', $page) ?>" data-role="client">
         <span class="material-icons">calendar_today</span>Moje Wizyty
@@ -247,7 +253,16 @@ function navSuffix(string $p, string $cur): string {
 </div>
 
 <!-- PAGE CONTENT -->
+<main id="lumina-main" class="<?= lumina_main_class($page) ?>">
 <?php include __DIR__ . '/pages/' . $page . '.php'; ?>
+</main>
+
+<?php
+$noFooter = ['auth', 'setup', 'admin', 'employees', 'services', 'dashboard', 'booking'];
+if (!in_array($page, $noFooter, true)) {
+    include __DIR__ . '/includes/footer.php';
+}
+?>
 
 
 <!-- Profile edit modal -->
@@ -295,7 +310,13 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <!-- Global orchestrator (auth, notifications, globals) -->
-<script type="module" src="/luminaphp/js/app.js"></script>
+<script type="module" src="<?= lumina_asset('/js/app.js') ?>"></script>
+
+<!-- Lumina AI Bot — TF-IDF intent classifier, no external APIs -->
+<script type="module">
+  import { initBot } from '/luminaphp/js/modules/bot-ui.js';
+  initBot();
+</script>
 
 <?php if ($page === 'auth'): ?>
 <script type="module">
@@ -381,6 +402,16 @@ if ('serviceWorker' in navigator) {
 <script type="module">
   import { initGalleryPage } from '/luminaphp/js/pages/gallery-page.js';
   initGalleryPage(<?= json_encode($bizId) ?>);
+</script>
+
+<?php elseif ($page === 'marketplace'): ?>
+<script type="module">
+  import { initMarketplace } from '/luminaphp/js/pages/marketplace-page.js';
+  function tryInit(n = 0) {
+    if (window.App?._ready || n > 30) initMarketplace();
+    else setTimeout(() => tryInit(n + 1), 100);
+  }
+  tryInit();
 </script>
 
 <?php elseif (in_array($page, ['profile','reviews','offers','notifications','favorites','map','chat','loyalty','invoice','referral'])): ?>

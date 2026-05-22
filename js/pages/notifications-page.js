@@ -41,7 +41,7 @@ function render() {
         <p>${escHtml(n.message || '')}</p>
         <time>${formatTimestamp(n.createdAt)}</time>
       </div>
-    </motion-div>`).join('').replace(/motion-div>/g, 'motion-div>'.startsWith('x') ? 'div>' : 'div>') : '<p class="text-muted">Brak powiadomień</p>';
+    </div>`).join('') : '<p class="text-muted">Brak powiadomień</p>';
 
   const pag = document.getElementById('notifPagination');
   if (pag && total > 1) {

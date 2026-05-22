@@ -300,6 +300,12 @@ export function renderAppointments(list, containerId = 'appointmentsList') {
                  <span>Do kalendarza</span>
                </button>`
             : ''}
+          ${a.businessId
+            ? `<button class="booking-action-btn" onclick="window.rebookAppt?.('${escHtml(a.id)}')" title="Przebookuj tę usługę">
+                 <span class="material-icons">replay</span>
+                 <span>Przebookuj</span>
+               </button>`
+            : ''}
           ${!cancelled
             ? `<button class="booking-action-btn booking-action-btn--danger" onclick="window.cancelAppt('${escHtml(a.id)}')" title="Anuluj wizytę">
                  <span class="material-icons">close</span>

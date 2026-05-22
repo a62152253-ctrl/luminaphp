@@ -61,18 +61,24 @@ function render_error_page(int $code, ?Throwable $e = null): void
         return;
     }
     http_response_code($code);
+    
+    // Security headers
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
+    header('X-XSS-Protection: 0');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
 
     $isJson = str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')
            || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
 
     if ($isJson) {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         $body = ['error' => http_response_phrase($code), 'status' => $code];
         if ($e) {
             $body['message'] = $e->getMessage();
             $body['trace']   = $e->getTrace();
         }
-        echo json_encode($body, JSON_UNESCAPED_UNICODE);
+        echo json_encode($body, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
         exit;
     }
 
@@ -86,7 +92,7 @@ function render_error_page(int $code, ?Throwable $e = null): void
     ];
 
     $title = $messages[$code] ?? 'Error';
-    $detail = $e ? htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') : '';
+    $detail = $e ? htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_HTML5, 'UTF-8') : '';
 
     echo <<<HTML
     <!DOCTYPE html>

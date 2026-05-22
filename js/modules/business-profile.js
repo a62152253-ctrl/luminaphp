@@ -184,7 +184,7 @@ export function buildBusinessProfile(input, options = {}) {
   if (!BUSINESS_CATEGORIES.includes(category)) errors.push('Wybierz prawidłową branżę.');
   if (!city) errors.push('Podaj miasto.');
   if (!address || !/\d/.test(address)) errors.push('Podaj pełny adres z numerem budynku.');
-  if (!nip || !isValidNip(nip)) errors.push('Podaj prawidłowy NIP.');
+  if (nip && !isValidNip(nip)) errors.push('Podaj prawidłowy NIP.');
   if (phone && !isValidPhone(phone)) errors.push('Podaj prawidłowy numer telefonu.');
   if (!isValidPostal(postal)) errors.push('Podaj kod pocztowy w formacie 00-000.');
   if (input.website && !website) errors.push('Podaj prawidłowy adres strony www.');

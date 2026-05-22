@@ -66,12 +66,12 @@
 
       <div class="auth-fields">
         <div class="auth-field">
-          <label for="setupName">Nazwa salonu *</label>
-          <input id="setupName" type="text" class="auth-input" placeholder="np. Barber Shop Pro">
+          <label for="setupName" id="setupNameLabel">Nazwa salonu *</label>
+          <input id="setupName" type="text" class="auth-input" placeholder="np. Barber Shop Pro" required aria-required="true" aria-labelledby="setupNameLabel">
         </div>
         <div class="auth-field">
-          <label for="setupCategory">Branża *</label>
-          <select id="setupCategory" class="auth-input">
+          <label for="setupCategory" id="setupCategoryLabel">Branża *</label>
+          <select id="setupCategory" class="auth-input" required aria-required="true" aria-labelledby="setupCategoryLabel">
             <option value="">Wybierz branżę…</option>
             <option>Barber</option>
             <option>Fryzjer</option>
@@ -84,31 +84,33 @@
           </select>
         </div>
         <div class="auth-field">
-          <label for="setupDesc">Opis salonu</label>
+          <label for="setupDesc" id="setupDescLabel">Opis salonu</label>
           <textarea id="setupDesc" class="auth-input" rows="3"
             placeholder="Kilka słów o Twoim salonie, specjalizacji i ofercie…"
-            oninput="window.setupDescCount?.(this.value)"></textarea>
-          <span id="setupDescCounter" class="setup-field-hint">0 / rekomendowane min. 80 znaków</span>
+            oninput="window.setupDescCount?.(this.value)"
+            aria-describedby="setupDescCounter" aria-labelledby="setupDescLabel"></textarea>
+          <span id="setupDescCounter" class="setup-field-hint" aria-live="polite">0 / rekomendowane min. 80 znaków</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
           <div class="auth-field">
-            <label for="setupPhone">Telefon</label>
-            <input id="setupPhone" type="tel" class="auth-input" placeholder="+48 600 000 000">
+            <label for="setupPhone" id="setupPhoneLabel">Telefon</label>
+            <input id="setupPhone" type="tel" class="auth-input" placeholder="+48 600 000 000" aria-labelledby="setupPhoneLabel">
           </div>
           <div class="auth-field">
-            <label for="setupNip">NIP firmy *</label>
+            <label for="setupNip" id="setupNipLabel">NIP firmy <span style="font-weight:400;color:var(--zinc-400)">(opcjonalnie)</span></label>
             <div class="setup-input-with-status">
               <input id="setupNip" type="text" class="auth-input" placeholder="1234567890"
                 maxlength="10" inputmode="numeric" autocomplete="off"
-                oninput="window.setupNipCheck?.(this.value)">
-              <span id="setupNipStatus" class="setup-field-status"></span>
+                oninput="window.setupNipCheck?.(this.value)"
+                aria-labelledby="setupNipLabel" aria-describedby="setupNipStatus">
+              <span id="setupNipStatus" class="setup-field-status" aria-live="polite"></span>
             </div>
           </div>
         </div>
         <div class="auth-field">
-          <label for="setupWebsite">Strona www</label>
+          <label for="setupWebsite" id="setupWebsiteLabel">Strona www</label>
           <input id="setupWebsite" type="url" class="auth-input" placeholder="https://twojsalon.pl"
-            onblur="window.setupNormalizeUrl?.(this)">
+            onblur="window.setupNormalizeUrl?.(this)" aria-labelledby="setupWebsiteLabel">
           <span class="setup-field-hint">Możesz podać domenę bez https — uzupełnimy format automatycznie.</span>
         </div>
       </div>
@@ -130,28 +132,28 @@
 
       <div class="auth-fields">
         <div class="auth-field">
-          <label for="setupCity">Miasto *</label>
-          <input id="setupCity" type="text" class="auth-input" placeholder="np. Warszawa">
+          <label for="setupCity" id="setupCityLabel">Miasto *</label>
+          <input id="setupCity" type="text" class="auth-input" placeholder="np. Warszawa" required aria-required="true" aria-labelledby="setupCityLabel">
         </div>
         <div class="auth-field">
-          <label for="setupAddress">Ulica i numer *</label>
-          <input id="setupAddress" type="text" class="auth-input" placeholder="ul. Marszałkowska 10">
+          <label for="setupAddress" id="setupAddressLabel">Ulica i numer *</label>
+          <input id="setupAddress" type="text" class="auth-input" placeholder="ul. Marszałkowska 10" required aria-required="true" aria-labelledby="setupAddressLabel">
         </div>
         <div class="auth-field">
-          <label for="setupPostal">Kod pocztowy</label>
-          <input id="setupPostal" type="text" class="auth-input" placeholder="00-000">
+          <label for="setupPostal" id="setupPostalLabel">Kod pocztowy</label>
+          <input id="setupPostal" type="text" class="auth-input" placeholder="00-000" aria-labelledby="setupPostalLabel">
         </div>
 
-        <button type="button" id="setupGpsBtn" class="btn btn-secondary geo-btn" onclick="window.setupUseGPS()">
-          <span class="material-icons">my_location</span>
+        <button type="button" id="setupGpsBtn" class="btn btn-secondary geo-btn" onclick="window.setupUseGPS()" aria-label="Użyj lokalizacji GPS">
+          <span class="material-icons" aria-hidden="true">my_location</span>
           Użyj lokalizacji GPS (jeśli jesteś w salonie)
         </button>
         <p class="setup-geo-hint">
-          <span class="material-icons" style="font-size:.875rem;vertical-align:middle">info</span>
+          <span class="material-icons" style="font-size:.875rem;vertical-align:middle" aria-hidden="true">info</span>
           Jeśli nie użyjesz GPS, adres zostanie automatycznie geokodowany.
         </p>
-        <div id="setupLocationStatus" class="setup-location-status">
-          <span class="material-icons">pin_drop</span>
+        <div id="setupLocationStatus" class="setup-location-status" aria-live="polite">
+          <span class="material-icons" aria-hidden="true">pin_drop</span>
           <span>Po zapisaniu profilu zweryfikujemy współrzędne z adresem.</span>
         </div>
       </div>
@@ -190,20 +192,20 @@
 
       <div class="auth-fields">
         <div class="auth-field">
-          <label for="setupPhoto">URL zdjęcia</label>
+          <label for="setupPhoto" id="setupPhotoLabel">URL zdjęcia</label>
           <input id="setupPhoto" type="url" class="auth-input"
             placeholder="https://images.unsplash.com/..."
             oninput="setupPreviewPhoto(this.value)"
-            onblur="window.setupNormalizeUrl?.(this)">
+            onblur="window.setupNormalizeUrl?.(this)" aria-labelledby="setupPhotoLabel">
         </div>
-        <div id="setupPhotoPreview" class="setup-photo-preview">
-          <span class="material-icons">add_photo_alternate</span>
+        <div id="setupPhotoPreview" class="setup-photo-preview" aria-live="polite" role="img" aria-label="Podgląd zdjęcia">
+          <span class="material-icons" aria-hidden="true">add_photo_alternate</span>
           <p>Podgląd zdjęcia</p>
         </div>
         <div class="setup-launch-box" id="setupLaunchChecklist">
           <div class="setup-launch-row" data-check="identity">
             <span class="material-icons">radio_button_unchecked</span>
-            <span>Dane firmy i NIP</span>
+            <span>Nazwa i branża</span>
           </div>
           <div class="setup-launch-row" data-check="location">
             <span class="material-icons">radio_button_unchecked</span>
@@ -215,7 +217,7 @@
           </div>
         </div>
         <label class="setup-consent">
-          <input type="checkbox" id="setupOwnerConsent">
+          <input type="checkbox" id="setupOwnerConsent" required aria-required="true">
           <span>Potwierdzam, że mam prawo utworzyć i zarządzać profilem tego salonu.</span>
         </label>
       </div>
@@ -260,18 +262,23 @@ const DAYS_PL = ['Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'
 function setupPreviewPhoto(url) {
   const el = document.getElementById('setupPhotoPreview');
   if (!el) return;
-  if (url && url.startsWith('http')) {
-    el.innerHTML = `<img src="${setupEsc(url)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"
-      onerror="this.parentElement.innerHTML='<span class=material-icons>broken_image</span><p>Nie można załadować zdjęcia</p>'">`;
+  if (url && /^https?:\/\//i.test(url)) {
+    const img = document.createElement('img');
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:inherit';
+    img.alt = 'Podgląd zdjęcia salonu';
+    img.onerror = () => {
+      el.innerHTML = '<span class="material-icons">broken_image</span><p>Nie można załadować zdjęcia</p>';
+    };
+    img.src = url;
+    el.textContent = '';
+    el.appendChild(img);
   } else {
     el.innerHTML = '<span class="material-icons">add_photo_alternate</span><p>Podgląd zdjęcia</p>';
   }
 }
 
-function setupEsc(str) {
-  return String(str || '').replace(/[&<>"']/g, ch => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-  }[ch]));
+function setupValidateNip(nip) {
+  return /^\d{10}$/.test(nip.replace(/\D/g, ''));
 }
 
 function setupShowError(msg) {
@@ -302,6 +309,7 @@ function setupNext(current) {
     const cat  = document.getElementById('setupCategory')?.value;
     if (!name) { setupShowError('Podaj nazwę salonu.'); return; }
     if (!cat)  { setupShowError('Wybierz branżę.'); return; }
+    if (name.length < 3) { setupShowError('Nazwa salonu musi mieć co najmniej 3 znaki.'); return; }
     setupGoTo(2);
   } else if (current === 2) {
     const city = document.getElementById('setupCity')?.value.trim();

@@ -1,4 +1,9 @@
 # =============================================================================
+# Dev tools (never deploy to production)
+# =============================================================================
+seed.php
+
+# =============================================================================
 # Secrets & environment
 # Real values: Firebase private keys, DB passwords, JWT secret, SMTP, Redis.
 # Copy .env.example → .env and fill in locally; never commit populated files.

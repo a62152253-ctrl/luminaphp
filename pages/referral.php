@@ -1,6 +1,6 @@
 <?php /* Program poleceń */ ?>
 <div class="features-page container">
-  <header class="features-hero">
+  <header class="features-hero lumina-page-head">
     <h1>Program poleceń</h1>
     <p>Zaproś znajomych i zdobądź bonusy</p>
   </header>

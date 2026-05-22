@@ -1,0 +1,26 @@
+/*
+ * Lumina consolidated stylesheet — main.css
+ *
+ * This file imports existing CSS files in the canonical order so server
+ * templates can reference a single stylesheet URL. Originals are left in
+ * place to allow a safe staged rollout and easy rollback. Once verified,
+ * you may choose to physically concatenate the files into this single
+ * asset and remove the originals (or move them to a backup folder).
+ */
+
+@import url('/luminaphp/css/material-icons.css');
+@import url('/luminaphp/css/style.css');
+@import url('/luminaphp/css/layout.css');
+@import url('/luminaphp/css/theme.css');
+
+/* Page/feature-specific styles (kept in main bundle order) */
+@import url('/luminaphp/css/marketplace.css');
+@import url('/luminaphp/css/features.css');
+@import url('/luminaphp/css/admin.css');
+@import url('/luminaphp/css/auth.css');
+@import url('/luminaphp/css/dashboard.css');
+@import url('/luminaphp/css/dashboard-pro.css');
+@import url('/luminaphp/css/business.css');
+@import url('/luminaphp/css/bot.css');
+
+/* Keep third-party libraries (Leaflet/Swiper/Flatpickr) loaded separately by lumina_stylesheets() when needed. */

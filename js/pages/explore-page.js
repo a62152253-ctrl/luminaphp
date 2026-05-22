@@ -48,6 +48,7 @@ let _maxPrice        = null;
 let _minRating       = null;
 let _filterOpenNow   = false;
 let _filterOpenToday = false;
+let _compareList     = [];   // up to 3 biz ids being compared
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 export async function initExplore(initialCat = '') {
@@ -72,9 +73,33 @@ export async function initExplore(initialCat = '') {
   }
 
   bindEvents();
+  bindCategoryChips(initialCat);
   requestLocation();
   applyAndRender();
   renderRecentSearches();
+}
+
+function bindCategoryChips(initialCat = '') {
+  const chips = document.querySelectorAll('.market-cat-chip');
+  if (!chips.length) return;
+
+  const sync = (cat) => {
+    chips.forEach(c => c.classList.toggle('active', (c.dataset.cat || '') === (cat || '')));
+    document.querySelectorAll('#filterCat input[type=checkbox]').forEach(cb => {
+      cb.checked = cat ? cb.value === cat : false;
+    });
+  };
+
+  if (initialCat) sync(initialCat);
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const cat = chip.dataset.cat || '';
+      _categories = cat ? [cat] : [];
+      sync(cat);
+      applyAndRender();
+    });
+  });
 }
 
 // ─── EVENT BINDING ────────────────────────────────────────────────────────────
@@ -99,6 +124,11 @@ function bindEvents() {
   };
   window._clearRecent = () => {
     localStore(RECENT_KEY, []);
+    renderRecentSearches();
+  };
+  window._clearExploreFilters = () => {
+    clearFilters();
+    applyAndRender();
     renderRecentSearches();
   };
 
@@ -154,6 +184,24 @@ function bindEvents() {
     window.App.favorites = await toggleFavorite(user.uid, bizId, window.App.favorites);
     applyAndRender();
   };
+
+  // Compare
+  document.getElementById('compareBtn')?.addEventListener('click', openCompareModal);
+  document.getElementById('compareOpenBtn')?.addEventListener('click', openCompareModal);
+  document.getElementById('compareClearBtn')?.addEventListener('click', clearCompare);
+
+  window.toggleCompare = (bizId, e) => {
+    e?.stopPropagation();
+    const idx = _compareList.indexOf(bizId);
+    if (idx !== -1) {
+      _compareList.splice(idx, 1);
+    } else {
+      if (_compareList.length >= 3) { return; }
+      _compareList.push(bizId);
+    }
+    updateCompareUI();
+    applyAndRender();
+  };
 }
 
 function collectSidebarFilters() {
@@ -187,6 +235,9 @@ function clearFilters() {
   document.getElementById('priceMax') && (document.getElementById('priceMax').value = '');
   document.getElementById('exploreSearch')  && (document.getElementById('exploreSearch').value  = '');
   document.getElementById('exploreLocation') && (document.getElementById('exploreLocation').value = '');
+  document.querySelectorAll('.market-cat-chip').forEach(c => {
+    c.classList.toggle('active', !(c.dataset.cat || ''));
+  });
 }
 
 // ─── GEOLOCATION ──────────────────────────────────────────────────────────────
@@ -296,9 +347,13 @@ function renderGrid(list) {
   if (!grid) return;
 
   if (!list.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--zinc-400)">
-      <span class="material-icons" style="font-size:3rem;display:block;margin-bottom:1rem">search_off</span>
-      <strong>Nic nie znaleźliśmy</strong><br>Spróbuj zmienić filtry lub wyszukiwaną frazę.
+    grid.innerHTML = `<div class="market-empty">
+      <span class="material-icons">search_off</span>
+      <strong>Nic nie znaleźliśmy</strong>
+      <p>Spróbuj zmienić filtry, kategorię lub wyszukiwaną frazę.</p>
+      <button type="button" class="btn btn-primary" onclick="window._clearExploreFilters?.()">
+        <span class="material-icons" style="font-size:1rem">refresh</span> Wyczyść filtry
+      </button>
     </div>`;
     return;
   }
@@ -316,14 +371,21 @@ function renderGrid(list) {
     const reviewCount = b.reviewCount ? `<span style="color:var(--zinc-400);font-size:.8rem">(${b.reviewCount})</span>` : '';
     const desc = b.description ? `<p class="explore-salon-desc">${esc(truncate(b.description, 80))}</p>` : '';
 
-    return `<div class="explore-salon-card" data-biz-id="${b.id}" role="article"
-        onclick="if(!event.target.closest('.explore-fav-btn,.explore-book-btn')){trackRecentlyViewed_${b.id}();window.location.href='?page=business&id=${b.id}'}"
+    const inCompare = _compareList.includes(b.id);
+    return `<div class="explore-salon-card${inCompare ? ' explore-card-comparing' : ''}" data-biz-id="${b.id}" role="article"
+        onclick="if(!event.target.closest('.explore-fav-btn,.explore-book-btn,.explore-compare-btn')){trackRecentlyViewed_${b.id}();window.location.href='?page=business&id=${b.id}'}"
         style="cursor:pointer">
       <div class="explore-salon-img">
         <img src="${b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800'}"
           alt="${esc(b.name)}" loading="lazy">
         <button class="explore-fav-btn" onclick="window.toggleFav('${b.id}',event)" title="${fav ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}" aria-pressed="${fav}">
           <span class="material-icons" style="color:${fav ? '#ef4444' : '#94a3b8'}">${fav ? 'favorite' : 'favorite_border'}</span>
+        </button>
+        <button class="explore-compare-btn${inCompare ? ' active' : ''}"
+          onclick="window.toggleCompare('${b.id}',event)"
+          title="${inCompare ? 'Usuń z porównania' : 'Dodaj do porównania'}"
+          aria-pressed="${inCompare}">
+          <span class="material-icons">compare</span>
         </button>
       </div>
       <div class="explore-salon-body">
@@ -370,11 +432,77 @@ function setView(mode) {
           (b.name || '').toLowerCase().includes(q) || (b.city || '').toLowerCase().includes(q));
       }
       if (_categories.length) filtered = filtered.filter(b => _categories.includes(b.category || ''));
-      initMap('mapView', filtered);
+      initMap('mapContainer', filtered);
     }, 50);
   } else {
     destroyMap();
   }
+}
+
+// ─── COMPARE ─────────────────────────────────────────────────────────────────
+
+function updateCompareUI() {
+  const count = _compareList.length;
+  const countEl = document.getElementById('compareCount');
+  if (countEl) countEl.textContent = count;
+
+  const btn = document.getElementById('compareBtn');
+  if (btn) btn.classList.toggle('btn-accent', count >= 2);
+
+  const bar = document.getElementById('compareBar');
+  if (bar) bar.classList.toggle('hidden', count === 0);
+
+  const slots = document.getElementById('compareBarSlots');
+  if (slots) {
+    slots.innerHTML = _compareList.map(id => {
+      const b = _all.find(x => x.id === id);
+      return b ? `<div class="compare-bar-slot">
+        <img src="${esc(b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=60')}" alt="${esc(b.name)}">
+        <span>${esc(b.name)}</span>
+        <button onclick="window.toggleCompare('${b.id}',event)">
+          <span class="material-icons">close</span>
+        </button>
+      </div>` : '';
+    }).join('');
+  }
+}
+
+function clearCompare() {
+  _compareList = [];
+  updateCompareUI();
+  applyAndRender();
+}
+
+function openCompareModal() {
+  if (_compareList.length < 2) return;
+
+  const salons = _compareList.map(id => _all.find(b => b.id === id)).filter(Boolean);
+  const body   = document.getElementById('compareModalBody');
+  if (!body) return;
+
+  const rows = [
+    { label: 'Zdjęcie',    render: b => `<img src="${esc(b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200')}" alt="${esc(b.name)}" class="compare-row-img">` },
+    { label: 'Nazwa',      render: b => `<strong>${esc(b.name)}</strong>` },
+    { label: 'Kategoria',  render: b => esc(b.category || '—') },
+    { label: 'Ocena',      render: b => b.rating ? `<span class="material-icons" style="color:#f59e0b;font-size:1rem;vertical-align:middle">star</span> ${b.rating}${b.reviewCount ? ` (${b.reviewCount})` : ''}` : '—' },
+    { label: 'Adres',      render: b => esc((b.address ? b.address + ', ' : '') + (b.city || '')) || '—' },
+    { label: 'Cena od',    render: b => b.minPrice ? `${b.minPrice} zł` : '—' },
+    { label: 'Otwarte',    render: b => isOpenNow(b) ? '<span style="color:#16a34a;font-weight:600">Teraz</span>' : '<span style="color:#71717a">Zamknięte</span>' },
+  ];
+
+  body.innerHTML = `
+    <div class="compare-table" style="grid-template-columns:9rem repeat(${salons.length},1fr)">
+      ${rows.map(row => `
+        <div class="compare-row-label">${esc(row.label)}</div>
+        ${salons.map(b => `<div class="compare-row-cell">${row.render(b)}</div>`).join('')}
+      `).join('')}
+      <div class="compare-row-label">Rezerwacja</div>
+      ${salons.map(b => `<div class="compare-row-cell">
+        <a href="/luminaphp/?page=business&id=${esc(b.id)}" class="btn btn-accent btn-sm">Umów wizytę</a>
+      </div>`).join('')}
+    </div>`;
+
+  document.getElementById('compareModal')?.classList.remove('hidden');
 }
 
 const esc = escHtml;

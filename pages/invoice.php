@@ -1,6 +1,6 @@
 <?php /* Szczegóły płatności / paragon */ ?>
 <div class="features-page container">
-  <header class="features-hero">
+  <header class="features-hero lumina-page-head">
     <h1>Płatności i paragony</h1>
     <p>Historia transakcji i pobieranie dokumentów PDF</p>
   </header>

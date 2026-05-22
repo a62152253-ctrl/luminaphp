@@ -43,10 +43,7 @@ self.addEventListener('notificationclick', e => {
 const CACHE_NAME = 'lumina-v3-pro';
 const PRECACHE = [
   '/luminaphp/',
-  '/luminaphp/css/style.css',
-  '/luminaphp/css/premium.css',
-  '/luminaphp/css/pro-theme.css',
-  '/luminaphp/css/features.css',
+  '/luminaphp/css/main.css',
   '/luminaphp/js/app.js',
   '/luminaphp/js/firebase-config.js',
   '/luminaphp/js/modules/offline-sync.js',

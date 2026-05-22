@@ -26,7 +26,7 @@ function renderSubscription(sub) {
     <p>Status: <strong>${hasActiveAccess(sub) ? 'Aktywna' : 'Wygasła'}</strong></p>
     <p>Plan: ${sub.plan ? plans[sub.plan]?.label : 'Trial (1 dzień)'}</p>
     <p>Płatności PayPal → jankom@eskp.pl</p>
-   : '<p>Brak subskrypcji</p>';
+    ` : '<p>Brak subskrypcji</p>';
 }
 
 function renderTransactions(txs) {

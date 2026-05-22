@@ -1,10 +1,13 @@
+import { db, collection, getDocs, query, where } from '../firebase-config.js';
 import { DashState, setText } from './dashboard-core.js';
+import { loadBusinesses } from './businesses.js';
 import { renderAppointments } from './booking-mgr.js';
 import { getPoints, getTier, TIERS } from './loyalty.js';
 import {
   filterAppointments, sortList, getNextAppointment, isUpcoming, isCancelled, getApptDate, getFilterLabel,
+  computeMonthlySpending, getAiRecommendations,
 } from './dashboard-insights.js';
-import { escHtml, emptyState, statusLabel, formatDatePl, formatTimestamp } from './utils.js';
+import { escHtml, emptyState, statusLabel, formatDatePl, formatTimestamp, formatCurrency } from './utils.js';
 
 export async function renderLoyaltySidebar(uid) {
   const el = document.getElementById('sidebarLoyalty');
@@ -35,7 +38,50 @@ export async function renderLoyaltySidebar(uid) {
   }
 }
 
-export function renderOverviewWidgets() {
+export async function renderMarketplacePicks() {
+  const grid = document.getElementById('dashMarketplacePicks');
+  if (!grid) return;
+
+  try {
+    const snap = await getDocs(query(collection(db, 'flashDeals'), where('active', '==', true)));
+    if (!snap.empty) {
+      const deals = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(d => !d.expiresAt || d.expiresAt.toDate?.() > new Date())
+        .sort((a, b) => (a.expiresAt?.seconds || 0) - (b.expiresAt?.seconds || 0))
+        .slice(0, 4);
+
+      if (deals.length) {
+        grid.innerHTML = deals.map(d => `
+          <a href="/luminaphp/?page=marketplace" class="dash-market-card dash-market-card--deal">
+            <div class="dash-market-deal-badge">-${d.discountPercent || 30}%</div>
+            <img src="${escHtml(d.businessPhoto || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400')}" alt="" loading="lazy">
+            <strong>${escHtml(d.serviceName || 'Flash Deal')}</strong>
+            <span>${escHtml(d.businessName || '')} · <b style="color:var(--accent)">${d.discountedPrice || 0} zł</b></span>
+          </a>`).join('');
+        return;
+      }
+    }
+
+    // Fallback: top businesses by rating
+    const all = await loadBusinesses();
+    const picks = [...all].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
+    if (!picks.length) {
+      grid.innerHTML = '<p class="dash-muted">Brak salonów — <a href="/luminaphp/?page=explore">przeglądaj marketplace</a></p>';
+      return;
+    }
+    grid.innerHTML = picks.map(b => `
+      <a href="/luminaphp/?page=business&id=${escHtml(b.id)}" class="dash-market-card">
+        <img src="${escHtml(b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400')}" alt="" loading="lazy">
+        <strong>${escHtml(b.name || 'Salon')}</strong>
+        <span>${escHtml(b.category || '')} · ${escHtml(b.city || '')}</span>
+      </a>`).join('');
+  } catch {
+    grid.innerHTML = '<p class="dash-muted">Nie udało się załadować salonów.</p>';
+  }
+}
+
+export async function renderOverviewWidgets() {
   const next = getNextAppointment();
   const up = DashState.appointments.filter(isUpcoming);
   const fav = (window.App?.favorites || []).length;
@@ -43,6 +89,8 @@ export function renderOverviewWidgets() {
   setText('overviewUpcoming', up.length);
   setText('overviewFavorites', fav);
   setText('overviewReviews', DashState.reviews.length);
+
+  renderMarketplacePicks();
 
   const strip = document.getElementById('overviewNextStrip');
   if (!strip) return;
@@ -195,6 +243,172 @@ function renderTimeline(list, el) {
         </div>
       </div>
     </article>`).join('')}</div>`;
+}
+
+export function renderForYou() {
+  const el = document.getElementById('aiRecsGrid');
+  if (!el) return;
+  const recs = getAiRecommendations(DashState.appointments);
+  el.innerHTML = recs.map(r => `
+    <a href="/luminaphp/?page=explore" class="dash-rec-card">
+      <div class="dash-rec-icon"><span class="material-icons">${escHtml(r.icon)}</span></div>
+      <strong>${escHtml(r.title)}</strong>
+      <span>${escHtml(r.hint)}</span>
+    </a>`).join('');
+}
+
+export function renderBeautyJournal() {
+  const el = document.getElementById('journalList');
+  if (!el) return;
+  const entries = DashState.journal;
+  if (!entries.length) {
+    el.innerHTML = '<p class="dash-muted">Brak notatek — dodaj pierwszą po wizycie.</p>';
+    return;
+  }
+  el.innerHTML = entries.map(e => `
+    <article class="dash-journal-item">
+      <div class="dash-journal-item-head">
+        <strong>${escHtml(e.title || 'Notatka')}</strong>
+        <div class="dash-journal-item-meta">
+          ${e.date ? `<span><span class="material-icons">event</span>${escHtml(e.date)}</span>` : ''}
+          <button type="button" class="dash-journal-delete" onclick="window.deleteJournalEntry?.('${escHtml(e.id)}')" aria-label="Usuń">
+            <span class="material-icons">delete</span>
+          </button>
+        </div>
+      </div>
+      ${e.note ? `<p>${escHtml(e.note)}</p>` : ''}
+    </article>`).join('');
+}
+
+export function renderSavedStyles() {
+  const el = document.getElementById('savedStylesGrid');
+  if (!el) return;
+  const items = DashState.savedStyles;
+  if (!items.length) {
+    el.innerHTML = '<p class="dash-muted">Brak inspiracji — dodaj zdjęcie ze swojego ulubionego stylu.</p>';
+    return;
+  }
+  el.innerHTML = items.map(s => `
+    <div class="dash-style-card">
+      <img src="${escHtml(s.imageUrl)}" alt="${escHtml(s.title || 'Inspiracja')}" loading="lazy">
+      <div class="dash-style-card-footer">
+        <span>${escHtml(s.title || 'Styl')}</span>
+        <button type="button" onclick="window.deleteStyle?.('${escHtml(s.id)}')" aria-label="Usuń">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+export function renderGiftCards() {
+  const el = document.getElementById('myGiftCards');
+  if (!el) return;
+  const cards = DashState.giftCards;
+  if (!cards.length) {
+    el.innerHTML = '<p class="dash-muted">Nie masz aktywnych kart podarunkowych.</p>';
+    return;
+  }
+  el.innerHTML = cards.map(c => `
+    <div class="dash-gift-card">
+      <span class="material-icons">card_giftcard</span>
+      <div>
+        <strong>${escHtml(c.code || '—')}</strong>
+        <span>Saldo: <b>${formatCurrency(c.balance || 0)}</b></span>
+        ${c.expires ? `<span>Ważna do: ${escHtml(c.expires)}</span>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+export function renderSubscriptions() {
+  const el = document.getElementById('subscriptionsList');
+  if (!el) return;
+  const subs = DashState.subscriptions;
+  if (!subs.length) {
+    el.innerHTML = '<p class="dash-muted">Brak aktywnych pakietów subskrypcyjnych.</p>';
+    return;
+  }
+  el.innerHTML = subs.map(s => `
+    <div class="dash-sub-card">
+      <div class="dash-sub-icon"><span class="material-icons">subscriptions</span></div>
+      <div class="dash-sub-body">
+        <strong>${escHtml(s.name || 'Pakiet')}</strong>
+        <span>${escHtml(s.description || '')}</span>
+        <div class="dash-sub-meta">
+          <span>Pozostało: <b>${s.remaining ?? '—'}</b> wizyt</span>
+          ${s.expires ? `<span>Ważny do: ${escHtml(s.expires)}</span>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+export function renderDiscounts(loyaltyTier) {
+  const el = document.getElementById('myDiscounts');
+  if (!el) return;
+  const discounts = DashState.discounts;
+  const tierBenefit = loyaltyTier
+    ? { code: loyaltyTier.discount, label: `${loyaltyTier.label} — rabat lojalnościowy`, type: 'tier' }
+    : null;
+  const all = tierBenefit ? [tierBenefit, ...discounts] : discounts;
+  if (!all.length) {
+    el.innerHTML = '<p class="dash-muted">Brak aktywnych rabatów — zbieraj punkty lojalnościowe, aby odblokować korzyści.</p>';
+    return;
+  }
+  el.innerHTML = all.map(d => `
+    <div class="dash-discount-row">
+      <div class="dash-discount-icon dash-discount-icon--${escHtml(d.type || 'coupon')}">
+        <span class="material-icons">${d.type === 'tier' ? 'emoji_events' : 'local_offer'}</span>
+      </div>
+      <div>
+        <strong>${escHtml(d.label || d.code || 'Rabat')}</strong>
+        ${d.code && d.type !== 'tier' ? `<code class="dash-discount-code">${escHtml(d.code)}</code>` : ''}
+        ${d.expires ? `<span class="dash-discount-exp">Ważny do: ${escHtml(d.expires)}</span>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+export function renderMonthlyExpenseChart(budget) {
+  const canvas = document.getElementById('statsMonthlyChart');
+  if (!canvas || !window.Chart) return;
+
+  const data = computeMonthlySpending(DashState.appointments);
+  const labels = data.map(m => m.label);
+  const values = data.map(m => m.total);
+  const budgetLine = budget > 0 ? Array(data.length).fill(budget) : null;
+
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+
+  new window.Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Wydatki',
+          data: values,
+          backgroundColor: 'rgba(244,63,94,0.18)',
+          borderColor: '#f43f5e',
+          borderWidth: 2,
+          borderRadius: 8,
+        },
+        ...(budgetLine ? [{
+          label: 'Budżet',
+          data: budgetLine,
+          type: 'line',
+          borderColor: '#6366f1',
+          borderDash: [6, 3],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        }] : []),
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: !!budgetLine } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => `${v} zł` } } },
+    },
+  });
 }
 
 export function renderReviewsTab() {

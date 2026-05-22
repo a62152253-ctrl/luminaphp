@@ -1,6 +1,6 @@
 import { getBusinessById, loadServices, loadStaff } from '../modules/businesses.js';
 import { db, collection, addDoc, getDocs, query, where, serverTimestamp } from '../firebase-config.js';
-import { toast, formatDuration } from '../modules/utils.js';
+import { toast, formatDuration, escHtml } from '../modules/utils.js';
 import { addToCalendar, getBookedTimesForDay } from '../modules/booking-mgr.js';
 
 const STATE_KEY = 'lumina_booking';
@@ -29,11 +29,11 @@ export async function initBooking(bizId) {
   state.date    = saved.date || new Date().toISOString().split('T')[0];
   state.time    = saved.time;
 
-  const step = state.step;
-  if      (step === '1') await renderStep1(bizId, state);
-  else if (step === '2') await renderStep2(bizId, state);
-  else if (step === '3') renderStep3(state);
-  else if (step === '4') await renderStep4(bizId, state);
+  const step = Number(state.step);
+  if      (step === 1) await renderStep1(bizId, state);
+  else if (step === 2) await renderStep2(bizId, state);
+  else if (step === 3) renderStep3(state);
+  else if (step === 4) await renderStep4(bizId, state);
 }
 
 async function renderStep1(bizId, state) {
@@ -52,11 +52,11 @@ async function renderStep1(bizId, state) {
   el.innerHTML = services.map(s => `
     <div class="booking-service-item" onclick='selectServiceStep(${JSON.stringify(s)})' style="cursor:pointer;display:flex;align-items:center;gap:1rem;padding:1rem;border:1px solid var(--zinc-100);border-radius:.75rem;margin-bottom:.75rem">
       <div style="flex:1">
-        <div style="font-weight:700;font-size:.9375rem">${s.name}</div>
+        <div style="font-weight:700;font-size:.9375rem">${escHtml(s.name)}</div>
         <div style="color:var(--zinc-400);font-size:.8125rem;margin-top:.25rem">${formatDuration(s.duration)}</div>
-        ${s.description ? `<div style="color:var(--zinc-500);font-size:.8125rem;margin-top:.25rem">${s.description}</div>` : ''}
+        ${s.description ? `<div style="color:var(--zinc-500);font-size:.8125rem;margin-top:.25rem">${escHtml(s.description)}</div>` : ''}
       </div>
-      <div style="font-weight:800;font-size:1rem">${s.price} zł</div>
+      <div style="font-weight:800;font-size:1rem">${escHtml(String(s.price))} zł</div>
       <span class="material-icons" style="color:var(--zinc-300)">chevron_right</span>
     </div>`).join('');
 
@@ -79,10 +79,10 @@ async function renderStep2(bizId, state) {
   } else {
     el.innerHTML = `<div class="booking-staff-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem">
       ${staff.map(s => `
-        <div class="staff-card" data-id="${s.id}" onclick='selectStaffStep(${JSON.stringify(s)})' style="cursor:pointer;text-align:center;padding:1.25rem;border:1px solid var(--zinc-100);border-radius:.75rem">
-          <img src="${s.photoURL || 'https://i.pravatar.cc/200'}" alt="${s.name}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:.75rem">
-          <div style="font-weight:700;font-size:.875rem">${s.name}</div>
-          <div style="color:var(--zinc-400);font-size:.75rem;margin-top:.2rem">${s.title || ''}</div>
+        <div class="staff-card" data-id="${escHtml(s.id)}" onclick='selectStaffStep(${JSON.stringify(s)})' style="cursor:pointer;text-align:center;padding:1.25rem;border:1px solid var(--zinc-100);border-radius:.75rem">
+          <img src="${escHtml(s.photoURL || '')}" alt="${escHtml(s.name)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:.75rem" onerror="this.src=''">
+          <div style="font-weight:700;font-size:.875rem">${escHtml(s.name)}</div>
+          <div style="color:var(--zinc-400);font-size:.75rem;margin-top:.2rem">${escHtml(s.title || '')}</div>
         </div>`).join('')}
     </div>${skipBtn}`;
   }
@@ -131,7 +131,8 @@ function renderStep3(state) {
     try {
       booked = await getBookedTimesForDay(state.staff?.id || null, date);
     } catch(_) {
-      timeGrid.innerHTML = '<div style="padding:.75rem;color:#ef4444;font-size:.875rem;display:flex;align-items:center;gap:.5rem"><span class="material-icons" style="font-size:1rem">wifi_off</span>Nie udało się załadować godzin. <button onclick="refreshTimeGrid(state.date)" style="text-decoration:underline;color:inherit;margin-left:.25rem">Spróbuj ponownie</button></div>';
+      timeGrid.innerHTML = '<div style="padding:.75rem;color:#ef4444;font-size:.875rem;display:flex;align-items:center;gap:.5rem"><span class="material-icons" style="font-size:1rem">wifi_off</span>Nie udało się załadować godzin. <button id="retryTimeGrid" style="text-decoration:underline;color:inherit;margin-left:.25rem">Spróbuj ponownie</button></div>';
+      document.getElementById('retryTimeGrid')?.addEventListener('click', () => refreshTimeGrid(state.date));
       return;
     }
 

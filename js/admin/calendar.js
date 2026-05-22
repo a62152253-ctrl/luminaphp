@@ -306,7 +306,35 @@ function initDrag(el, appt, col, dateStr) {
 }
 
 // ===== ADD / EDIT APPOINTMENT MODAL =====
+let _fpDate = null;
+let _fpTime = null;
+
+function initFlatpickr() {
+  const waitFp = (cb) => {
+    if (window.flatpickr) { cb(); return; }
+    const t = setInterval(() => { if (window.flatpickr) { clearInterval(t); cb(); } }, 100);
+  };
+  waitFp(() => {
+    const locale = window.flatpickr?.l10ns?.pl || {};
+    const dateEl = document.getElementById('calApptDate');
+    const timeEl = document.getElementById('calApptTime');
+    if (dateEl && !dateEl._flatpickr) {
+      _fpDate = flatpickr(dateEl, {
+        dateFormat: 'Y-m-d', locale, disableMobile: true,
+        minDate: 'today', theme: 'material_blue',
+      });
+    }
+    if (timeEl && !timeEl._flatpickr) {
+      _fpTime = flatpickr(timeEl, {
+        enableTime: true, noCalendar: true, time_24hr: true, dateFormat: 'H:i',
+        minuteIncrement: 30, locale, disableMobile: true,
+      });
+    }
+  });
+}
+
 function initApptModal() {
+  initFlatpickr();
   window.calEditAppt = id => {
     if (!id) { openApptModal(null); return; }
     const a = _appts.find(x => x.id === id);
@@ -329,11 +357,16 @@ function openApptModal(appt = null, date = '', time = '') {
   const modal = document.getElementById('calApptModal');
   if (!modal) return;
 
-  document.getElementById('calApptId').value       = appt?.id || '';
-  document.getElementById('calApptClient').value   = appt?.clientName || '';
-  document.getElementById('calApptPhone').value    = appt?.clientPhone || '';
-  document.getElementById('calApptDate').value     = appt?.date || date || dayStr(_calDate);
-  document.getElementById('calApptTime').value     = appt?.time || time || '09:00';
+  document.getElementById('calApptId').value     = appt?.id || '';
+  document.getElementById('calApptClient').value = appt?.clientName || '';
+  document.getElementById('calApptPhone').value  = appt?.clientPhone || '';
+
+  const dateVal = appt?.date || date || dayStr(_calDate);
+  const timeVal = appt?.time || time || '09:00';
+  if (_fpDate) _fpDate.setDate(dateVal, true);
+  else document.getElementById('calApptDate').value = dateVal;
+  if (_fpTime) _fpTime.setDate(timeVal, true);
+  else document.getElementById('calApptTime').value = timeVal;
   document.getElementById('calApptNotes').value    = appt?.notes || '';
 
   // Populate service select

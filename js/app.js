@@ -18,6 +18,26 @@ import { trackClick } from './modules/referral.js';
 /* Register SW immediately (PWA installability, even without FCM configured) */
 registerServiceWorker();
 
+// ===== PERFORMANCE TIMING =====
+const _perf = {
+  t0: performance.now(),
+  mark(label) {
+    const ms = (performance.now() - this.t0).toFixed(0);
+    console.log(`%c[Lumina Perf] ${label}: ${ms}ms`, 'color:#6366f1;font-weight:bold');
+  },
+  async measure(label, fn) {
+    const t = performance.now();
+    try {
+      const r = await fn();
+      console.log(`%c[Lumina Perf] ${label}: ${(performance.now() - t).toFixed(0)}ms`, 'color:#10b981;font-weight:bold');
+      return r;
+    } catch(e) {
+      console.log(`%c[Lumina Perf] ${label} FAILED: ${(performance.now() - t).toFixed(0)}ms`, 'color:#ef4444;font-weight:bold');
+      throw e;
+    }
+  }
+};
+
 /* Global feature modules */
 initCookieConsent();
 initLanguageSwitcher();
@@ -32,13 +52,14 @@ window.App = { user: null, userDoc: null, role: null, businesses: [], notificati
 
 // ===== AUTH LISTENER =====
 listenAuth(async user => {
+  _perf.mark('onAuthStateChanged fired');
   window.App.user = user;
   renderHeader(user);
   renderSidebar(user);
 
   if (user) {
     try {
-      const userDoc = await loadUserDoc(user.uid, user);
+      const userDoc = await _perf.measure('loadUserDoc (Firestore)', () => loadUserDoc(user.uid, user));
       window.App.userDoc = userDoc;
       window.App.role    = userDoc.role;
       renderHeader(user);
@@ -47,7 +68,7 @@ listenAuth(async user => {
       if (await handleAuthRedirects(user, userDoc, currentPage)) { return; }
 
       try {
-        window.App.notifications = await loadNotifications(user.uid);
+        window.App.notifications = await _perf.measure('loadNotifications (Firestore)', () => loadNotifications(user.uid));
       } catch(_) {
         window.App.notifications = [];
       }
@@ -163,21 +184,30 @@ document.addEventListener('click', e => {
 });
 
 // ===== DARK MODE =====
+function _applyTheme(dark) {
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  document.querySelectorAll('.theme-toggle-icon').forEach(el => {
+    el.textContent = dark ? 'light_mode' : 'dark_mode';
+    el.title = dark ? 'Włącz jasny motyw' : 'Włącz ciemny motyw';
+  });
+}
+
 (function initDarkMode() {
-  const saved = localStorage.getItem('lumina_theme');
+  const saved      = localStorage.getItem('lumina_theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const isDark = saved ? saved === 'dark' : prefersDark;
-  if (isDark) { document.documentElement.dataset.theme = 'dark'; }
+  const isDark     = saved ? saved === 'dark' : prefersDark;
+  // apply before first paint (no transition on load)
+  _applyTheme(isDark);
+  // enable transitions after load to avoid flash
+  window.addEventListener('load', () => {
+    document.documentElement.style.setProperty('--_dm-transition', 'background .25s,color .2s,border-color .2s');
+  });
 })();
 
 window.toggleDarkMode = () => {
-  const html  = document.documentElement;
-  const isDark = html.dataset.theme === 'dark';
-  html.dataset.theme = isDark ? 'light' : 'dark';
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  _applyTheme(!isDark);
   localStorage.setItem('lumina_theme', isDark ? 'light' : 'dark');
-  document.querySelectorAll('.theme-toggle-icon').forEach(el => {
-    el.textContent = isDark ? 'dark_mode' : 'light_mode';
-  });
 };
 
 // ===== ONLINE / OFFLINE BANNER =====

@@ -52,5 +52,5 @@ async function loadReviews(append = false) {
   if (!el) return;
   el.innerHTML = items.length
     ? items.map(r => renderReviewCard(r)).join('')
-    : '<motion-div class="empty-state"><p>Brak opinii</p></motion-div>'.replace('motion-div', 'div');
+    : '<div class="empty-state"><p>Brak opinii</p></div>';
 }

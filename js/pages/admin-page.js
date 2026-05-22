@@ -1,4 +1,4 @@
-// admin-page.js — koordynator, importuje 10 modułów
+// admin-page.js — koordynator, importuje 13 modułów
 import { db, collection, getDocs, query, where, doc, getDoc }
   from '../firebase-config.js';
 import { toast } from '../modules/utils.js';
@@ -15,6 +15,9 @@ import { initOffers }     from '../admin/offers.js';
 import { initReviews }    from '../admin/reviews.js';
 import { initPortfolio }  from '../admin/portfolio.js';
 import { initSettings }   from '../admin/settings.js';
+import { initWaitlist }   from '../admin/waitlist.js';
+import { initMarketing }  from '../admin/marketing.js';
+import { initWidget }     from '../admin/widget.js';
 
 let _bizId, _bizDoc;
 let _appts    = [];
@@ -85,12 +88,15 @@ function switchTab(tab) {
     case 'calendar':    initCalendar(_bizId, _appts, _staff, _services); break;
     case 'clients':     initClients(_bizId, _appts); break;
     case 'services':    initServices(_bizId, _services); break;
-    case 'staff':       initStaff(_bizId, _staff); break;
+    case 'staff':       initStaff(_bizId, _staff, _appts); break;
     case 'reports':     initReports(_appts, _services, _staff); break;
     case 'offers':      initOffers(_bizId, _bizDoc); break;
     case 'bizreviews':  initReviews(_bizId); break;
     case 'portfolio':   initPortfolio(_bizId); break;
     case 'settings':    initSettings(_bizId, _bizDoc); break;
+    case 'waitlist':    initWaitlist(_bizId); break;
+    case 'marketing':   initMarketing(_bizId, _appts); break;
+    case 'widget':      initWidget(_bizId, _bizDoc); break;
   }
 }
 

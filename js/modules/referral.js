@@ -5,8 +5,8 @@ import { toast } from './utils.js';
 const BONUS_POINTS = 100;
 
 export function generateLink(uid) {
-  const base = `${location.origin}/luminaphp/?page=auth&ref=`;
-  return base + uid;
+  const code = uid.slice(0, 8).toUpperCase();
+  return `${location.origin}/luminaphp/?page=auth&ref=${code}`;
 }
 
 export async function ensureReferralCode(uid) {

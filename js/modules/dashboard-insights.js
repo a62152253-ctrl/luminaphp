@@ -174,3 +174,51 @@ export function buildIcs(appt) {
 export function getFilterLabel(f) {
   return { all: 'wszystkie', upcoming: 'nadchodzące', history: 'historia', cancelled: 'anulowane' }[f] || f;
 }
+
+export function computeMonthlySpending(appointments) {
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: d.toLocaleDateString('pl-PL', { month: 'short' }), year: d.getFullYear(), month: d.getMonth(), total: 0 });
+  }
+  const paid = appointments.filter(a =>
+    ['completed', 'zakończona', 'confirmed', 'potwierdzona'].includes(a.status)
+  );
+  paid.forEach(a => {
+    const d = getApptDate(a);
+    if (!d) return;
+    const bucket = months.find(m => m.year === d.getFullYear() && m.month === d.getMonth());
+    if (bucket) bucket.total += Number(a.price || 0);
+  });
+  return months;
+}
+
+export function getAiRecommendations(appointments) {
+  const freq = {};
+  appointments.filter(a => !isCancelled(a)).forEach(a => {
+    const key = a.serviceName || 'Wizyta';
+    freq[key] = (freq[key] || 0) + 1;
+  });
+
+  const top = Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([service, count]) => ({ service, count }));
+
+  if (!top.length) {
+    return [
+      { icon: 'content_cut', title: 'Strzyżenie', hint: 'Najczęściej wybierana usługa wśród klientów' },
+      { icon: 'palette', title: 'Koloryzacja', hint: 'Odśwież kolor — umów wizytę' },
+      { icon: 'face', title: 'Pielęgnacja', hint: 'Zabiegi na twarz — sprawdź ofertę' },
+      { icon: 'spa', title: 'Masaż', hint: 'Relaks i odprężenie w pobliżu' },
+    ];
+  }
+
+  const icons = { 'Strzyżenie': 'content_cut', 'Koloryzacja': 'palette', 'Masaż': 'spa', 'Paznokcie': 'back_hand', 'Makijaż': 'face', 'Pielęgnacja': 'spa' };
+  return top.map(({ service, count }) => ({
+    icon: icons[service] || 'star',
+    title: service,
+    hint: count > 1 ? `Byłeś ${count} razy — zarezerwuj ponownie` : 'Twoja ostatnia usługa — wróć wkrótce',
+  }));
+}

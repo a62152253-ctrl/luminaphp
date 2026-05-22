@@ -1,9 +1,9 @@
 <?php /* Panel Salonu — Business Dashboard */ ?>
 
-<div class="biz-layout">
+<div class="biz-layout" role="main">
 
   <!-- ===== SIDEBAR ===== -->
-  <aside class="biz-sidebar">
+  <aside class="biz-sidebar" aria-label="Nawigacja panelu salonu">
     <div class="biz-sidebar-brand">
       <div class="biz-sidebar-icon"><span class="material-icons">storefront</span></div>
       <div>
@@ -20,13 +20,13 @@
       </div>
     </div>
 
-    <nav class="biz-nav">
+    <nav class="biz-nav" aria-label="Menu panelu salonu">
       <a href="#" class="biz-nav-link" data-btab="home">
         <span class="material-icons">dashboard</span> Panel główny
       </a>
       <a href="#" class="biz-nav-link" data-btab="calendar">
         <span class="material-icons">calendar_today</span> Kalendarz
-        <span class="biz-nav-badge hidden" id="pendingBadge">0</span>
+        <span class="biz-nav-badge hidden" id="pendingBadge" aria-label="oczekujących rezerwacji">0</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="clients">
         <span class="material-icons">people</span> Klienci
@@ -36,6 +36,10 @@
       </a>
       <a href="#" class="biz-nav-link" data-btab="staff">
         <span class="material-icons">badge</span> Pracownicy
+      </a>
+      <a href="#" class="biz-nav-link" data-btab="waitlist">
+        <span class="material-icons">queue</span> Lista oczekujących
+        <span class="biz-nav-badge hidden" id="waitlistBadge" aria-label="wpisów na liście oczekujących">0</span>
       </a>
 
       <div class="biz-nav-separator"></div>
@@ -52,6 +56,12 @@
       <a href="#" class="biz-nav-link" data-btab="portfolio">
         <span class="material-icons">photo_library</span> Portfolio
       </a>
+      <a href="#" class="biz-nav-link" data-btab="marketing">
+        <span class="material-icons">campaign</span> Marketing
+      </a>
+      <a href="#" class="biz-nav-link" data-btab="widget">
+        <span class="material-icons">code</span> Widget rezerwacji
+      </a>
 
       <div class="biz-nav-separator"></div>
 
@@ -65,10 +75,10 @@
   </aside>
 
   <!-- ===== MAIN ===== -->
-  <main class="biz-main" id="adminContent">
+  <main class="biz-main" id="adminContent" aria-label="Treść panelu salonu">
 
     <!-- ===== TOP STATS BAR ===== -->
-    <div class="biz-stats-bar">
+    <div class="biz-stats-bar" role="region" aria-label="Statystyki salonu">
       <div class="biz-stat">
         <div class="biz-stat-icon"><span class="material-icons">today</span></div>
         <div><div class="biz-stat-val" id="adminStatToday">0</div><div class="biz-stat-label">Dziś</div></div>
@@ -85,8 +95,9 @@
         <div class="biz-stat-icon"><span class="material-icons">event_available</span></div>
         <div><div class="biz-stat-val" id="adminStatTotal">0</div><div class="biz-stat-label">Łącznie</div></div>
       </div>
-      <button class="biz-export-btn" onclick="window.exportAppts?.()">
-        <span class="material-icons">download</span> CSV
+      <button class="btn btn-ghost btn-sm biz-export-btn" onclick="window.exportAppts?.()"
+        aria-label="Eksportuj wizyty do pliku CSV">
+        <span class="material-icons" aria-hidden="true">download</span> CSV
       </button>
     </div>
 
@@ -179,6 +190,9 @@
     <div class="biz-tab hidden" data-btab="clients">
       <div class="biz-tab-header">
         <h2>Klienci</h2>
+        <button class="btn btn-ghost biz-add-btn" id="birthdayFilterBtn" onclick="clientToggleBirthday()">
+          <span class="material-icons">cake</span> Urodziny w tym miesiącu
+        </button>
         <input type="search" id="clientSearch" class="settings-input"
           placeholder="Szukaj po imieniu lub telefonie…"
           style="max-width:18rem;padding:.5rem 1rem;font-size:.875rem">
@@ -200,12 +214,29 @@
     <!-- ===== TAB: STAFF ===== -->
     <div class="biz-tab hidden" data-btab="staff">
       <div class="biz-tab-header">
-        <h2>Pracownicy</h2>
-        <button class="btn btn-accent biz-add-btn" onclick="bizOpenStaffModal()">
+        <h2 id="staffTabTitle">Pracownicy</h2>
+        <button class="btn btn-accent biz-add-btn" id="staffAddBtn" onclick="bizOpenStaffModal()">
           <span class="material-icons">person_add</span> Dodaj pracownika
         </button>
       </div>
-      <div id="staffList"><div class="spinner" style="margin:3rem auto"></div></div>
+      <div class="biz-sub-tabs" id="staffSubTabs">
+        <button class="biz-sub-tab active" data-stab="staff-list">Pracownicy</button>
+        <button class="biz-sub-tab" data-stab="schedule">Grafik zmian</button>
+        <button class="biz-sub-tab" data-stab="commissions">Prowizje</button>
+        <button class="biz-sub-tab" data-stab="kpi">Cele (KPI)</button>
+      </div>
+      <div id="staffListPanel">
+        <div id="staffList"><div class="spinner" style="margin:3rem auto"></div></div>
+      </div>
+      <div id="schedulePanel" class="hidden">
+        <div id="scheduleView"></div>
+      </div>
+      <div id="commissionsPanel" class="hidden">
+        <div id="commissionsView"></div>
+      </div>
+      <div id="kpiPanel" class="hidden">
+        <div id="kpiView"></div>
+      </div>
     </div>
 
     <!-- ===== TAB: REPORTS ===== -->
@@ -241,12 +272,27 @@
     <!-- ===== TAB: OFFERS ===== -->
     <div class="biz-tab hidden" data-btab="offers">
       <div class="biz-tab-header">
-        <h2>Oferty i Promocje</h2>
-        <button class="btn btn-accent biz-add-btn" onclick="bizOpenPromoModal()">
-          <span class="material-icons">add</span> Nowa oferta
+        <h2>Oferty i Marketplace</h2>
+        <button class="btn btn-accent biz-add-btn" onclick="bizOpenAddModal()">
+          <span class="material-icons">add</span> Dodaj
         </button>
       </div>
-      <div id="promosList"></div>
+      <div class="biz-sub-tabs" id="offersSubTabs">
+        <button class="biz-sub-tab active" data-ostab="promos">Promocje</button>
+        <button class="biz-sub-tab" data-ostab="flash">
+          <span class="material-icons" style="font-size:1rem;vertical-align:middle">bolt</span> Flash Deals
+        </button>
+        <button class="biz-sub-tab" data-ostab="bundles">
+          <span class="material-icons" style="font-size:1rem;vertical-align:middle">inventory_2</span> Pakiety
+        </button>
+        <button class="biz-sub-tab" data-ostab="subs">
+          <span class="material-icons" style="font-size:1rem;vertical-align:middle">autorenew</span> Subskrypcje
+        </button>
+      </div>
+      <div id="offersPromoPanel"><div id="promosList"></div></div>
+      <div id="offersFlashPanel"   class="hidden"><div id="flashDealsList"></div></div>
+      <div id="offersBundlesPanel" class="hidden"><div id="bundlesList"></div></div>
+      <div id="offersSubsPanel"    class="hidden"><div id="subsList"></div></div>
     </div>
 
     <!-- ===== TAB: REVIEWS ===== -->
@@ -259,6 +305,55 @@
     <div class="biz-tab hidden" data-btab="portfolio">
       <div class="biz-tab-header"><h2>Portfolio</h2></div>
       <div id="portfolioContent"><div class="spinner" style="margin:3rem auto"></div></div>
+    </div>
+
+    <!-- ===== TAB: WAITLIST ===== -->
+    <div class="biz-tab hidden" data-btab="waitlist">
+      <div class="biz-tab-header">
+        <h2>Lista oczekujących</h2>
+        <span class="biz-wl-count" id="waitlistCountBadge">0 wpisów</span>
+      </div>
+      <p class="biz-tab-hint">Klienci, którzy poprosili o powiadomienie gdy zwolni się termin.</p>
+      <div id="waitlistEntries"><div class="spinner" style="margin:3rem auto"></div></div>
+    </div>
+
+    <!-- ===== TAB: MARKETING ===== -->
+    <div class="biz-tab hidden" data-btab="marketing">
+      <div class="biz-tab-header">
+        <h2>Marketing</h2>
+        <button class="btn btn-accent biz-add-btn" onclick="bizNewCampaign()">
+          <span class="material-icons">add</span> Nowa kampania
+        </button>
+      </div>
+      <div class="mkt-templates-row">
+        <button class="mkt-template-btn" onclick="bizNewCampaign('birthday')">
+          <span class="material-icons">cake</span>
+          <span>Życzenia urodzinowe</span>
+          <small>Klienci z urodzinami w tym miesiącu</small>
+        </button>
+        <button class="mkt-template-btn" onclick="bizNewCampaign('lastminute')">
+          <span class="material-icons">bolt</span>
+          <span>Promocja last minute</span>
+          <small>Wolny termin — wyślij szybką ofertę</small>
+        </button>
+        <button class="mkt-template-btn" onclick="bizNewCampaign('promo')">
+          <span class="material-icons">local_offer</span>
+          <span>Promocja ogólna</span>
+          <small>Wyślij ofertę do wszystkich klientów</small>
+        </button>
+        <button class="mkt-template-btn" onclick="bizNewCampaign('rebook')">
+          <span class="material-icons">replay</span>
+          <span>Zaproszenie do powrotu</span>
+          <small>Klienci nieaktywni od 4+ tygodni</small>
+        </button>
+      </div>
+      <div id="campaignHistory" class="mkt-history"></div>
+    </div>
+
+    <!-- ===== TAB: WIDGET ===== -->
+    <div class="biz-tab hidden" data-btab="widget">
+      <div class="biz-tab-header"><h2>Widget rezerwacji</h2></div>
+      <div id="widgetContent"></div>
     </div>
 
     <!-- ===== TAB: SETTINGS ===== -->
@@ -372,11 +467,15 @@
 <!-- ===== MODALS ===== -->
 
 <!-- Service modal -->
-<div class="biz-modal-overlay hidden" id="serviceModal">
+<div class="biz-modal-overlay hidden" id="serviceModal"
+  role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle">
   <div class="biz-modal">
     <div class="biz-modal-header">
       <h3 id="serviceModalTitle">Dodaj usługę</h3>
-      <button class="biz-modal-close" onclick="document.getElementById('serviceModal').classList.add('hidden')"><span class="material-icons">close</span></button>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('serviceModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
     </div>
     <div class="biz-modal-body">
       <input type="hidden" id="serviceEditId">
@@ -401,11 +500,15 @@
 </div>
 
 <!-- Staff modal -->
-<div class="biz-modal-overlay hidden" id="staffModal">
+<div class="biz-modal-overlay hidden" id="staffModal"
+  role="dialog" aria-modal="true" aria-labelledby="staffModalTitle">
   <div class="biz-modal">
     <div class="biz-modal-header">
       <h3 id="staffModalTitle">Dodaj pracownika</h3>
-      <button class="biz-modal-close" onclick="document.getElementById('staffModal').classList.add('hidden')"><span class="material-icons">close</span></button>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('staffModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
     </div>
     <div class="biz-modal-body">
       <input type="hidden" id="staffEditId">
@@ -424,6 +527,8 @@
           <div id="staffColor" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.25rem"></div></div>
         <div class="auth-field"><label>URL zdjęcia (opcjonalnie)</label>
           <input id="staffPhoto" type="url" class="auth-input" placeholder="https://..."></div>
+        <div class="auth-field"><label>Prowizja (%)</label>
+          <input id="staffCommission" type="number" class="auth-input" placeholder="0" min="0" max="100" step="1"></div>
       </div>
     </div>
     <div class="biz-modal-footer">
@@ -434,11 +539,15 @@
 </div>
 
 <!-- Promo modal -->
-<div class="biz-modal-overlay hidden" id="promoModal">
+<div class="biz-modal-overlay hidden" id="promoModal"
+  role="dialog" aria-modal="true" aria-labelledby="promoModalTitle">
   <div class="biz-modal">
     <div class="biz-modal-header">
       <h3 id="promoModalTitle">Nowa oferta</h3>
-      <button class="biz-modal-close" onclick="document.getElementById('promoModal').classList.add('hidden')"><span class="material-icons">close</span></button>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('promoModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
     </div>
     <div class="biz-modal-body">
       <input type="hidden" id="promoEditId">
@@ -463,11 +572,14 @@
 </div>
 
 <!-- Appointment modal (calendar) -->
-<div class="biz-modal-overlay hidden" id="calApptModal">
+<div class="biz-modal-overlay hidden" id="calApptModal"
+  role="dialog" aria-modal="true" aria-labelledby="calApptModalTitle">
   <div class="biz-modal" style="max-width:32rem">
     <div class="biz-modal-header">
       <h3 id="calApptModalTitle">Nowa wizyta</h3>
-      <button class="biz-modal-close" onclick="calCloseApptModal()"><span class="material-icons">close</span></button>
+      <button class="biz-modal-close" aria-label="Zamknij" onclick="calCloseApptModal()">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
     </div>
     <div class="biz-modal-body">
       <input type="hidden" id="calApptId">
@@ -515,11 +627,14 @@
 </div>
 
 <!-- Status change modal -->
-<div class="biz-modal-overlay hidden" id="calStatusModal">
+<div class="biz-modal-overlay hidden" id="calStatusModal"
+  role="dialog" aria-modal="true" aria-labelledby="calStatusModalTitle">
   <div class="biz-modal" style="max-width:22rem">
     <div class="biz-modal-header">
-      <h3>Zmień status wizyty</h3>
-      <button class="biz-modal-close" onclick="calCloseStatusModal()"><span class="material-icons">close</span></button>
+      <h3 id="calStatusModalTitle">Zmień status wizyty</h3>
+      <button class="biz-modal-close" aria-label="Zamknij" onclick="calCloseStatusModal()">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
     </div>
     <div class="biz-modal-body">
       <input type="hidden" id="calStatusApptId">
@@ -538,10 +653,242 @@
   </div>
 </div>
 
+<!-- Shift modal -->
+<div class="biz-modal-overlay hidden" id="shiftModal"
+  role="dialog" aria-modal="true" aria-labelledby="shiftModalTitle">
+  <div class="biz-modal" style="max-width:26rem">
+    <div class="biz-modal-header">
+      <h3 id="shiftModalTitle">Dodaj zmianę</h3>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('shiftModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <div class="biz-modal-body">
+      <div class="auth-fields">
+        <div class="auth-field"><label>Pracownik *</label>
+          <select id="shiftStaff" class="auth-input"><option value="">— Wybierz —</option></select></div>
+        <div class="auth-field"><label>Data *</label>
+          <input id="shiftDate" type="date" class="auth-input"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="auth-field"><label>Od</label>
+            <input id="shiftFrom" type="time" class="auth-input" value="09:00"></div>
+          <div class="auth-field"><label>Do</label>
+            <input id="shiftTo" type="time" class="auth-input" value="17:00"></div>
+        </div>
+      </div>
+    </div>
+    <div class="biz-modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('shiftModal').classList.add('hidden')">Anuluj</button>
+      <button class="btn btn-accent" onclick="scheduleSaveShift()">Zapisz zmianę</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vacation modal -->
+<div class="biz-modal-overlay hidden" id="vacationModal"
+  role="dialog" aria-modal="true" aria-labelledby="vacModalTitle">
+  <div class="biz-modal" style="max-width:26rem">
+    <div class="biz-modal-header">
+      <h3 id="vacModalTitle">Zarejestruj urlop</h3>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('vacationModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <div class="biz-modal-body">
+      <div class="auth-fields">
+        <div class="auth-field"><label>Pracownik *</label>
+          <select id="vacStaff" class="auth-input"><option value="">— Wybierz —</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="auth-field"><label>Od *</label>
+            <input id="vacStart" type="date" class="auth-input"></div>
+          <div class="auth-field"><label>Do *</label>
+            <input id="vacEnd" type="date" class="auth-input"></div>
+        </div>
+        <div class="auth-field"><label>Uwagi (opcjonalnie)</label>
+          <input id="vacNote" type="text" class="auth-input" placeholder="np. urlop wypoczynkowy" maxlength="80"></div>
+      </div>
+    </div>
+    <div class="biz-modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('vacationModal').classList.add('hidden')">Anuluj</button>
+      <button class="btn btn-accent" onclick="scheduleSaveVacation()">Zapisz urlop</button>
+    </div>
+  </div>
+</div>
+
+<!-- Marketing campaign modal -->
+<div class="biz-modal-overlay hidden" id="mktCampaignModal"
+  role="dialog" aria-modal="true" aria-labelledby="mktModalTitle">
+  <div class="biz-modal" style="max-width:36rem">
+    <div class="biz-modal-header">
+      <h3 id="mktModalTitle">Nowa kampania</h3>
+      <button class="biz-modal-close" aria-label="Zamknij" onclick="mktCloseCampaign()">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <div class="biz-modal-body">
+      <input type="hidden" id="mktCampaignType" value="custom">
+      <div class="auth-fields">
+        <div class="auth-field"><label>Kanał</label>
+          <select id="mktChannel" class="auth-input">
+            <option value="email">E-mail</option>
+            <option value="sms">SMS</option>
+            <option value="push">Powiadomienie push</option>
+          </select></div>
+        <div class="auth-field"><label>Temat *</label>
+          <input id="mktSubject" type="text" class="auth-input" placeholder="Temat wiadomości" maxlength="100"></div>
+        <div class="auth-field"><label>Treść *</label>
+          <textarea id="mktBody" class="auth-input" rows="5" placeholder="Treść kampanii…" maxlength="1000"></textarea></div>
+        <div class="auth-field">
+          <label>Odbiorcy: <span id="mktRecipientCount" style="color:var(--accent);font-weight:700">0</span></label>
+          <div id="mktRecipientsList" class="mkt-recipients-preview"></div>
+        </div>
+      </div>
+    </div>
+    <div class="biz-modal-footer">
+      <button class="btn btn-secondary" onclick="mktCloseCampaign()">Anuluj</button>
+      <button class="btn btn-accent" onclick="mktSendCampaign()">
+        <span class="material-icons">send</span> Wyślij kampanię
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Flash Deal modal -->
+<div class="biz-modal-overlay hidden" id="flashDealModal"
+  role="dialog" aria-modal="true" aria-labelledby="flashDealModalTitle">
+  <div class="biz-modal">
+    <div class="biz-modal-header">
+      <h3 id="flashDealModalTitle">Nowy Flash Deal</h3>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('flashDealModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <div class="biz-modal-body">
+      <input type="hidden" id="flashEditId">
+      <div class="auth-fields">
+        <div class="auth-field"><label>Usługa *</label>
+          <select id="flashService" class="auth-input" onchange="bizFlashRecalcPrice()">
+            <option value="">— Wybierz usługę —</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="auth-field"><label>Rabat (%)</label>
+            <input id="flashDiscount" type="number" class="auth-input" value="30" min="1" max="90"
+              oninput="bizFlashRecalcPrice()"></div>
+          <div class="auth-field"><label>Cena po rabacie (zł)</label>
+            <input id="flashPrice" type="number" class="auth-input" placeholder="auto" min="0" readonly
+              style="background:var(--zinc-50);cursor:default"></div>
+        </div>
+        <div class="auth-field"><label>Ważna do *</label>
+          <input id="flashExpires" type="datetime-local" class="auth-input"></div>
+      </div>
+    </div>
+    <div class="biz-modal-footer">
+      <button class="btn btn-secondary"
+        onclick="document.getElementById('flashDealModal').classList.add('hidden')">Anuluj</button>
+      <button class="btn btn-accent" onclick="bizSaveFlashDeal()">
+        <span class="material-icons">bolt</span> Opublikuj Flash Deal
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Bundle modal -->
+<div class="biz-modal-overlay hidden" id="bundleModal"
+  role="dialog" aria-modal="true" aria-labelledby="bundleModalTitle">
+  <div class="biz-modal" style="max-width:32rem">
+    <div class="biz-modal-header">
+      <h3 id="bundleModalTitle">Nowy pakiet</h3>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('bundleModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <div class="biz-modal-body">
+      <input type="hidden" id="bundleEditId">
+      <div class="auth-fields">
+        <div class="auth-field"><label>Nazwa pakietu *</label>
+          <input id="bundleName" type="text" class="auth-input" placeholder="np. Dzień spa"></div>
+        <div class="auth-field"><label>Opis</label>
+          <input id="bundleDesc" type="text" class="auth-input" placeholder="Krótki opis pakietu"></div>
+        <div class="auth-field"><label>Usługi w pakiecie *</label>
+          <div id="bundleServicesCheckboxes" class="biz-checkbox-list"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="auth-field"><label>Łączna wartość (zł)</label>
+            <input id="bundleTotalValue" type="number" class="auth-input" readonly
+              style="background:var(--zinc-50);cursor:default" placeholder="0"></div>
+          <div class="auth-field"><label>Cena pakietu (zł) *</label>
+            <input id="bundlePrice" type="number" class="auth-input" placeholder="np. 200" min="1"></div>
+        </div>
+      </div>
+    </div>
+    <div class="biz-modal-footer">
+      <button class="btn btn-secondary"
+        onclick="document.getElementById('bundleModal').classList.add('hidden')">Anuluj</button>
+      <button class="btn btn-accent" onclick="bizSaveBundle()">
+        <span class="material-icons">inventory_2</span> Zapisz pakiet
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Subscription plan modal -->
+<div class="biz-modal-overlay hidden" id="subModal"
+  role="dialog" aria-modal="true" aria-labelledby="subModalTitle">
+  <div class="biz-modal">
+    <div class="biz-modal-header">
+      <h3 id="subModalTitle">Nowy plan subskrypcji</h3>
+      <button class="biz-modal-close" aria-label="Zamknij"
+        onclick="document.getElementById('subModal').classList.add('hidden')">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+    </div>
+    <div class="biz-modal-body">
+      <input type="hidden" id="subEditId">
+      <div class="auth-fields">
+        <div class="auth-field"><label>Nazwa planu *</label>
+          <input id="subName" type="text" class="auth-input" placeholder="np. Basic, Premium"></div>
+        <div class="auth-field"><label>Opis</label>
+          <input id="subDesc" type="text" class="auth-input" placeholder="Krótki opis planu"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="auth-field"><label>Cena miesięczna (zł) *</label>
+            <input id="subPrice" type="number" class="auth-input" placeholder="99" min="1"></div>
+          <div class="auth-field"><label>Wizyt w miesiącu *</label>
+            <input id="subVisits" type="number" class="auth-input" placeholder="4" min="1"></div>
+        </div>
+        <div class="auth-field"><label>Korzyści (każda w nowej linii)</label>
+          <textarea id="subFeatures" class="auth-input" rows="3"
+            placeholder="Bezpłatna konsultacja&#10;Priorytet w rezerwacji&#10;Rabat 10% na produkty"></textarea>
+        </div>
+        <label class="notif-toggle-row" style="margin-top:.5rem">
+          <span class="notif-toggle-desc">
+            <span class="notif-toggle-title">Oznacz jako "Najpopularniejszy"</span>
+          </span>
+          <input type="checkbox" id="subPopular" class="notif-toggle-input">
+          <span class="notif-toggle-track"></span>
+        </label>
+      </div>
+    </div>
+    <div class="biz-modal-footer">
+      <button class="btn btn-secondary"
+        onclick="document.getElementById('subModal').classList.add('hidden')">Anuluj</button>
+      <button class="btn btn-accent" onclick="bizSaveSub()">
+        <span class="material-icons">autorenew</span> Zapisz plan
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Close modals on backdrop click -->
 <script>
 document.addEventListener('click', e => {
-  ['serviceModal','staffModal','promoModal','calApptModal','calStatusModal'].forEach(id => {
+  ['serviceModal','staffModal','promoModal','calApptModal','calStatusModal',
+   'shiftModal','vacationModal','mktCampaignModal',
+   'flashDealModal','bundleModal','subModal'].forEach(id => {
     const el = document.getElementById(id);
     if (el && e.target === el) el.classList.add('hidden');
   });

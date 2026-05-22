@@ -144,8 +144,8 @@ if (!function_exists('set_security_headers')) {
         // Prevent MIME type sniffing
         header('X-Content-Type-Options: nosniff');
         
-        // Enable XSS protection
-        header('X-XSS-Protection: 1; mode=block');
+        // Disabled: CSP is the correct XSS defense; mode=block causes issues in IE
+        header('X-XSS-Protection: 0');
         
         // Clickjacking protection
         header('X-Frame-Options: SAMEORIGIN');
@@ -163,7 +163,7 @@ if (!function_exists('set_security_headers')) {
         }
         
         // Permissions Policy
-        header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+        header('Permissions-Policy: geolocation=(self), microphone=(), camera=()');
         
         // Hide PHP version
         header_remove('X-Powered-By');
