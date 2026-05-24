@@ -1,7 +1,7 @@
 import { loadBusinesses, getPopularCategories } from '../modules/businesses.js';
-import { loadFavoriteIds, isFavorite, toggleFavorite } from '../modules/favorites.js';
+import { toggleFavorite } from '../modules/favorites.js';
 import { db, collection, getDocs } from '../firebase-config.js';
-import { localStore, waitForGlobal } from '../modules/utils.js';
+import { localStore, waitForGlobal, escHtml } from '../modules/utils.js';
 
 const RECENTLY_VIEWED_KEY = 'lumina_recently_viewed';
 let _homeBusinesses = [];
@@ -39,9 +39,9 @@ function renderRecentlyViewed() {
   const items = localStore(RECENTLY_VIEWED_KEY) || [];
   if (!items.length) { wrap.closest?.('[data-section="recently-viewed"]')?.remove(); return; }
   wrap.innerHTML = items.map(b => `
-    <a href="?page=business&id=${b.id}" class="recently-viewed-chip">
-      <img src="${b.photoURL || 'https://i.pravatar.cc/64'}" alt="${b.name}" onerror="this.src='https://i.pravatar.cc/64'">
-      <span>${b.name}</span>
+    <a href="?page=business&id=${encodeURIComponent(b.id)}" class="recently-viewed-chip">
+      <img src="${escHtml(b.photoURL || 'https://i.pravatar.cc/64')}" alt="${escHtml(b.name)}" onerror="this.src='https://i.pravatar.cc/64'">
+      <span>${escHtml(b.name)}</span>
     </a>`).join('');
 }
 
@@ -128,24 +128,26 @@ function renderFeatured(businesses) {
   const favIds = (window.App?.favorites || []).map(f => f.bizId);
 
   grid.innerHTML = featured.map(b => {
-    const isFav = favIds.includes(b.id);
+    const isFav  = favIds.includes(b.id);
+    const idEnc  = encodeURIComponent(b.id);
+    const idJson = JSON.stringify(b.id).replace(/"/g, '&quot;');
     return `
     <div class="swiper-slide">
-    <a href="?page=business&id=${b.id}" class="salon-booksy-card">
+    <a href="?page=business&id=${idEnc}" class="salon-booksy-card">
       <div class="salon-booksy-img">
-        <img src="${b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&auto=format&fit=crop'}" alt="${b.name}" loading="lazy">
-        <button class="salon-booksy-fav${isFav ? ' active' : ''}" onclick="event.preventDefault();window.toggleFav('${b.id}')">
+        <img src="${escHtml(b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&auto=format&fit=crop')}" alt="${escHtml(b.name)}" loading="lazy">
+        <button class="salon-booksy-fav${isFav ? ' active' : ''}" onclick="event.preventDefault();window.toggleFav(${idJson})">
           <span class="material-icons">${isFav ? 'favorite' : 'favorite_border'}</span>
         </button>
       </div>
       <div class="salon-booksy-body">
-        <div class="salon-booksy-cat">${b.category}</div>
-        <h3 class="salon-booksy-name">${b.name}</h3>
+        <div class="salon-booksy-cat">${escHtml(b.category)}</div>
+        <h3 class="salon-booksy-name">${escHtml(b.name)}</h3>
         <div class="salon-booksy-meta">
           <span class="salon-booksy-rating"><span class="material-icons">star</span> ${b.rating || '—'}</span>
-          <span>${b.city}</span>
+          <span>${escHtml(b.city)}</span>
         </div>
-        <div class="salon-booksy-price">${b.address || ''}</div>
+        <div class="salon-booksy-price">${escHtml(b.address || '')}</div>
         <button class="salon-booksy-book">Umów wizytę</button>
       </div>
     </a>
@@ -177,21 +179,21 @@ async function loadPromos() {
     }
 
     grid.innerHTML = promos.map(p => {
-      const pct = p.discountPercent || Math.round((1 - p.discountPrice / p.originalPrice) * 100);
-      const photo = p.photoURL || p.bizPhotoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&auto=format&fit=crop';
+      const pct   = p.discountPercent || Math.round((1 - p.discountPrice / p.originalPrice) * 100);
+      const photo = escHtml(p.photoURL || p.bizPhotoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&auto=format&fit=crop');
       return `
       <div class="swiper-slide">
-      <a href="?page=business&id=${p.businessId}" class="promo-booksy-card">
-        <div class="promo-booksy-tag">-${pct}%</div>
+      <a href="?page=business&id=${encodeURIComponent(p.businessId)}" class="promo-booksy-card">
+        <div class="promo-booksy-tag">-${Number(pct) || 0}%</div>
         <div class="promo-booksy-img">
-          <img src="${photo}" alt="${p.title}" loading="lazy">
+          <img src="${photo}" alt="${escHtml(p.title)}" loading="lazy">
         </div>
         <div class="promo-booksy-content">
-          <h3>${p.title}</h3>
-          <p>${p.businessName}</p>
+          <h3>${escHtml(p.title)}</h3>
+          <p>${escHtml(p.businessName)}</p>
           <div class="promo-booksy-price">
-            <span class="promo-new">${p.discountPrice} zł</span>
-            <span class="promo-old">${p.originalPrice} zł</span>
+            <span class="promo-new">${Number(p.discountPrice) || 0} zł</span>
+            <span class="promo-old">${Number(p.originalPrice) || 0} zł</span>
           </div>
         </div>
       </a>

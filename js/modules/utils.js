@@ -239,7 +239,7 @@ export function isRevenueStatus(status) {
 
 export function appointmentStatusLabel(status) {
   const key = normalizeAppointmentStatus(status);
-  return APPOINTMENT_STATUS_LABELS[key] || status || 'â€”';
+  return APPOINTMENT_STATUS_LABELS[key] || status || '—';
 }
 
 export function statusBadgeClass(status) {

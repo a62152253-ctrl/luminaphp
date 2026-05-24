@@ -1,6 +1,6 @@
 import { db, collection, getDocs, addDoc, query, where, orderBy, updateDoc, doc, serverTimestamp }
   from '../firebase-config.js';
-import { formatTimestamp } from './utils.js';
+import { formatTimestamp, escHtml } from './utils.js';
 
 export async function createNotification(userId, type, title, message, link = '') {
   try {
@@ -69,17 +69,19 @@ export function renderNotifications(notifications) {
   };
 
   body.innerHTML = notifications.map(n => {
+    const idJson   = JSON.stringify(n.id).replace(/"/g, '&quot;');
+    const linkJson = JSON.stringify(n.link || '').replace(/"/g, '&quot;');
     const clickHandler = n.link
-      ? `window.markRead('${n.id}');window.location.href='${n.link}'`
-      : `window.markRead('${n.id}')`;
+      ? `window.markRead(${idJson});window.location.href=${linkJson}`
+      : `window.markRead(${idJson})`;
     return `
     <div class="notif-item${n.read ? '' : ' unread'}" onclick="${clickHandler}" style="${n.link ? 'cursor:pointer' : ''}">
       <div class="notif-icon">
         <span class="material-icons">${NOTIF_ICONS[n.type] || 'notifications'}</span>
       </div>
       <div style="flex:1;min-width:0">
-        <p class="notif-title">${n.title || ''}</p>
-        <p class="notif-msg">${n.message || ''}</p>
+        <p class="notif-title">${escHtml(n.title || '')}</p>
+        <p class="notif-msg">${escHtml(n.message || '')}</p>
         <p class="notif-time">${formatTimestamp(n.createdAt)}</p>
       </div>
       ${!n.read ? '<div class="notif-dot"></div>' : ''}

@@ -52,7 +52,7 @@ function serviceCard(s) {
       <span class="material-icons" style="font-size:.875rem">schedule</span> ${s.duration || 60} min
     </div>
     <div class="biz-card-actions">
-      <button class="biz-card-btn" onclick="bizOpenServiceModal('${s.id}','${esc(s.name)}','${esc(s.category||'')}',${s.duration||60},${s.price||0})">
+      <button class="biz-card-btn" onclick="bizOpenServiceModal(${escAttr(s.id)},${escAttr(s.name)},${escAttr(s.category||'')},${Number(s.duration)||60},${Number(s.price)||0})">
         <span class="material-icons">edit</span>
       </button>
       <button class="biz-card-btn biz-card-btn-del" onclick="bizDeleteService('${s.id}')">
@@ -109,4 +109,5 @@ async function deleteService(id) {
   } catch(e) { toast('Błąd', 'error'); }
 }
 
-const esc = s => String(s ?? '').replace(/</g, '&lt;').replace(/'/g, "\\'");
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const escAttr = v => JSON.stringify(v).replace(/"/g, '&quot;');

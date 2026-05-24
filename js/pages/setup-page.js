@@ -89,8 +89,8 @@ async function useGPS() {
     return;
   }
 
-  document.getElementById('setupLat').value = loc.lat;
-  document.getElementById('setupLng').value = loc.lng;
+  setValue('setupLat', loc.lat);
+  setValue('setupLng', loc.lng);
   setLocationStatus('GPS zapisany. Adres i współrzędne będą częścią profilu salonu.', true);
 
   setGpsBtn(btn, 'geocoding');
@@ -122,7 +122,8 @@ function setValue(id, value) {
 
 function showSetupErr(btn, msg) {
   if (btn) { btn.disabled = false; btn.textContent = 'Utwórz profil i wejdź do panelu'; }
-  document.getElementById('setupErrorMsg').textContent = msg;
+  const errMsgEl = document.getElementById('setupErrorMsg');
+  if (errMsgEl) errMsgEl.textContent = msg;
   document.getElementById('setupError')?.classList.add('show');
 }
 
@@ -332,7 +333,8 @@ async function finishSetup(bizId) {
     window.location.href = '/luminaphp/?page=admin';
   } catch(e) {
     if (btn) { btn.disabled = false; btn.textContent = 'Utwórz profil i wejdź do panelu'; }
-    document.getElementById('setupErrorMsg').textContent = 'Błąd zapisu: ' + e.message;
+    const errMsgEl2 = document.getElementById('setupErrorMsg');
+    if (errMsgEl2) errMsgEl2.textContent = 'Błąd zapisu: ' + e.message;
     document.getElementById('setupError')?.classList.add('show');
   }
 }

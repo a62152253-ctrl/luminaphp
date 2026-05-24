@@ -49,6 +49,7 @@ const _perf = {
 initCookieConsent();
 initLanguageSwitcher();
 initOfflineSync();
+initAnalytics();
 
 /* Referral tracking from URL */
 const _refCode = new URLSearchParams(location.search).get('ref');
