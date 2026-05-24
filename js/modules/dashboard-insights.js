@@ -1,5 +1,15 @@
 import { DashState, setText } from './dashboard-core.js';
-import { statusLabel, formatDatePl, formatCurrency, pluralize } from './utils.js';
+import {
+  appointmentStatusLabel,
+  compareAppointmentsAsc,
+  compareAppointmentsDesc,
+  formatDatePl,
+  formatCurrency,
+  isCancelledStatus,
+  isRevenueStatus,
+  parseDateKey,
+  pluralize,
+} from './utils.js';
 
 export function isUpcoming(appt) {
   if (isCancelled(appt)) return false;
@@ -14,15 +24,11 @@ export function isHistory(appt) {
 }
 
 export function isCancelled(appt) {
-  return ['cancelled', 'anulowana'].includes(appt.status);
+  return isCancelledStatus(appt?.status);
 }
 
 export function getApptDate(appt) {
-  if (!appt?.date) return null;
-  const [y, m, d] = String(appt.date).split('-').map(Number);
-  const [hh, mm] = String(appt.time || '09:00').split(':').map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d, hh || 9, mm || 0, 0, 0);
+  return parseDateKey(appt?.date, appt?.time || '09:00');
 }
 
 export function getApptTs(appt) {
@@ -51,13 +57,13 @@ export function filterAppointments(list, filter, search) {
 
 export function sortList(list, filter) {
   const c = [...list];
-  if (filter === 'upcoming') return c.sort((a, b) => getApptTs(a) - getApptTs(b));
-  if (filter === 'history' || filter === 'cancelled') return c.sort((a, b) => getApptTs(b) - getApptTs(a));
+  if (filter === 'upcoming') return c.sort(compareAppointmentsAsc);
+  if (filter === 'history' || filter === 'cancelled') return c.sort(compareAppointmentsDesc);
   return c.sort((a, b) => {
     const au = isUpcoming(a), bu = isUpcoming(b);
     if (au && !bu) return -1;
     if (!au && bu) return 1;
-    return au ? getApptTs(a) - getApptTs(b) : getApptTs(b) - getApptTs(a);
+    return au ? compareAppointmentsAsc(a, b) : compareAppointmentsDesc(a, b);
   });
 }
 
@@ -70,7 +76,7 @@ export function computeStats(appointments) {
   ).length;
   const upcoming = appointments.filter(isUpcoming).length;
   const spent = appointments
-    .filter(a => ['completed', 'zakończona', 'confirmed', 'potwierdzona'].includes(a.status))
+    .filter(a => isRevenueStatus(a.status))
     .reduce((s, a) => s + Number(a.price || 0), 0);
 
   return { confirmed, pending, upcoming, total: appointments.length, spent };
@@ -118,7 +124,7 @@ export function updateNextVisitCard() {
     return;
   }
 
-  setText('nextVisitStatus', statusLabel(next.status));
+  setText('nextVisitStatus', appointmentStatusLabel(next.status));
   setText('nextVisitService', next.serviceName || 'Wizyta');
   setText('nextVisitBusiness', next.staffName
     ? `${next.businessName || 'Salon'} · ${next.staffName}`
@@ -142,7 +148,7 @@ function relativeNote(appt) {
     new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
   if (diff === 0) return 'Dzisiaj — dodaj do kalendarza jednym kliknięciem.';
   if (diff === 1) return 'Jutro — przypomnienie już tu czeka.';
-  return `Za ${diff} ${diff === 1 ? 'dzień' : 'dni'} — wszystko pod kontrolą.`;
+  return `Za ${pluralize(diff, 'dzień', 'dni', 'dni')} — wszystko pod kontrolą.`;
 }
 
 export function buildScheduleSummary() {
@@ -183,7 +189,7 @@ export function computeMonthlySpending(appointments) {
     months.push({ label: d.toLocaleDateString('pl-PL', { month: 'short' }), year: d.getFullYear(), month: d.getMonth(), total: 0 });
   }
   const paid = appointments.filter(a =>
-    ['completed', 'zakończona', 'confirmed', 'potwierdzona'].includes(a.status)
+    isRevenueStatus(a.status)
   );
   paid.forEach(a => {
     const d = getApptDate(a);

@@ -3,10 +3,16 @@
 <div class="biz-layout" role="main">
 
   <!-- ===== SIDEBAR ===== -->
-  <aside class="biz-sidebar" aria-label="Nawigacja panelu salonu">
+  <aside class="biz-sidebar" id="bizSidebar" aria-label="Nawigacja panelu salonu">
+
+    <button class="biz-sidebar-collapse" id="sidebarCollapseBtn"
+      title="Zwiń panel" aria-label="Zwiń panel boczny">
+      <span class="material-icons">chevron_left</span>
+    </button>
+
     <div class="biz-sidebar-brand">
       <div class="biz-sidebar-icon"><span class="material-icons">storefront</span></div>
-      <div>
+      <div class="biz-sidebar-brand-text">
         <div id="adminBizName" class="biz-sidebar-name">Mój Salon</div>
         <div id="adminBizCategory" class="biz-sidebar-badge">—</div>
       </div>
@@ -14,7 +20,7 @@
 
     <div class="biz-sidebar-owner">
       <img id="adminUserAvatar" src="" alt="Avatar właściciela" class="biz-sidebar-avatar">
-      <div>
+      <div class="biz-sidebar-owner-text">
         <div id="adminUserName" class="biz-sidebar-owner-name">Użytkownik</div>
         <div class="biz-sidebar-owner-role">Administrator</div>
       </div>
@@ -22,54 +28,68 @@
 
     <nav class="biz-nav" aria-label="Menu panelu salonu">
       <a href="#" class="biz-nav-link" data-btab="home">
-        <span class="material-icons">dashboard</span> Panel główny
+        <span class="material-icons">dashboard</span>
+        <span class="biz-nav-text">Panel główny</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="calendar">
-        <span class="material-icons">calendar_today</span> Kalendarz
+        <span class="material-icons">calendar_today</span>
+        <span class="biz-nav-text">Kalendarz</span>
         <span class="biz-nav-badge hidden" id="pendingBadge" aria-label="oczekujących rezerwacji">0</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="clients">
-        <span class="material-icons">people</span> Klienci
+        <span class="material-icons">people</span>
+        <span class="biz-nav-text">Klienci</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="services">
-        <span class="material-icons">content_cut</span> Usługi
+        <span class="material-icons">content_cut</span>
+        <span class="biz-nav-text">Usługi</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="staff">
-        <span class="material-icons">badge</span> Pracownicy
+        <span class="material-icons">badge</span>
+        <span class="biz-nav-text">Pracownicy</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="waitlist">
-        <span class="material-icons">queue</span> Lista oczekujących
+        <span class="material-icons">queue</span>
+        <span class="biz-nav-text">Lista oczekujących</span>
         <span class="biz-nav-badge hidden" id="waitlistBadge" aria-label="wpisów na liście oczekujących">0</span>
       </a>
 
       <div class="biz-nav-separator"></div>
 
       <a href="#" class="biz-nav-link" data-btab="reports">
-        <span class="material-icons">bar_chart</span> Raporty
+        <span class="material-icons">bar_chart</span>
+        <span class="biz-nav-text">Raporty</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="offers">
-        <span class="material-icons">local_offer</span> Oferty
+        <span class="material-icons">local_offer</span>
+        <span class="biz-nav-text">Oferty</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="bizreviews">
-        <span class="material-icons">star_half</span> Opinie
+        <span class="material-icons">star_half</span>
+        <span class="biz-nav-text">Opinie</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="portfolio">
-        <span class="material-icons">photo_library</span> Portfolio
+        <span class="material-icons">photo_library</span>
+        <span class="biz-nav-text">Portfolio</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="marketing">
-        <span class="material-icons">campaign</span> Marketing
+        <span class="material-icons">campaign</span>
+        <span class="biz-nav-text">Marketing</span>
       </a>
       <a href="#" class="biz-nav-link" data-btab="widget">
-        <span class="material-icons">code</span> Widget rezerwacji
+        <span class="material-icons">code</span>
+        <span class="biz-nav-text">Widget rezerwacji</span>
       </a>
 
       <div class="biz-nav-separator"></div>
 
       <a href="#" class="biz-nav-link" data-btab="settings">
-        <span class="material-icons">settings</span> Ustawienia
+        <span class="material-icons">settings</span>
+        <span class="biz-nav-text">Ustawienia</span>
       </a>
       <a href="#" class="biz-nav-link" onclick="logout();return false" style="color:var(--zinc-400)">
-        <span class="material-icons">logout</span> Wyloguj
+        <span class="material-icons">logout</span>
+        <span class="biz-nav-text">Wyloguj</span>
       </a>
     </nav>
   </aside>
@@ -103,47 +123,119 @@
 
     <!-- ===== TAB: HOME ===== -->
     <div class="biz-tab hidden" data-btab="home">
-      <div class="biz-tab-header">
-        <h2 id="overviewGreeting">Dzień dobry!</h2>
+
+      <!-- Hero -->
+      <div class="dash-hero">
+        <div class="dash-hero-text">
+          <h2 class="dash-greeting" id="overviewGreeting">Dzień dobry!</h2>
+          <p class="dash-hero-date" id="dashHeroDate"></p>
+        </div>
+        <div id="dashNextApptBanner"></div>
       </div>
-      <div class="home-grid">
-        <div class="home-main">
-          <div class="stats-grid" style="margin-bottom:2rem">
-            <div class="stat-card">
-              <div class="stat-card-icon" style="background:rgba(99,102,241,.1);color:#6366f1"><span class="material-icons">calendar_today</span></div>
-              <div class="stat-card-val" id="hStatToday">—</div>
-              <div class="stat-card-label">Wizyty dziś</div>
+
+      <!-- KPI row -->
+      <div class="dash-kpi-row">
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-icon dash-kpi-icon--indigo"><span class="material-icons">today</span></div>
+          <div class="dash-kpi-body">
+            <div class="dash-kpi-val" id="hStatToday">—</div>
+            <div class="dash-kpi-label">Wizyty dziś</div>
+          </div>
+          <div class="dash-kpi-trend" id="dashTrendToday"></div>
+        </div>
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-icon dash-kpi-icon--amber"><span class="material-icons">pending_actions</span></div>
+          <div class="dash-kpi-body">
+            <div class="dash-kpi-val" id="hStatPending">—</div>
+            <div class="dash-kpi-label">Oczekujące</div>
+          </div>
+          <div class="dash-kpi-trend" id="dashTrendPending"></div>
+        </div>
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-icon dash-kpi-icon--green"><span class="material-icons">payments</span></div>
+          <div class="dash-kpi-body">
+            <div class="dash-kpi-val" id="hStatRevenue">—</div>
+            <div class="dash-kpi-label">Przychód dziś</div>
+          </div>
+          <div class="dash-kpi-trend" id="dashTrendRevenue"></div>
+        </div>
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-icon dash-kpi-icon--rose"><span class="material-icons">bar_chart</span></div>
+          <div class="dash-kpi-body">
+            <div class="dash-kpi-val" id="hStatTotal">—</div>
+            <div class="dash-kpi-label">Łącznie wizyt</div>
+          </div>
+          <div class="dash-kpi-trend" id="dashTrendTotal"></div>
+        </div>
+      </div>
+
+      <!-- Body grid: left main + right side -->
+      <div class="dash-body-grid">
+
+        <!-- Left column -->
+        <div class="dash-body-main">
+
+          <!-- Today's schedule timeline -->
+          <div class="dash-panel">
+            <div class="dash-panel-hdr">
+              <div class="dash-panel-hdr-left">
+                <div class="dash-panel-dot" style="background:#6366f1"></div>
+                <h3>Harmonogram dziś</h3>
+              </div>
+              <button class="dash-panel-link" onclick="window.adminSwitchTab?.('calendar')">
+                Kalendarz <span class="material-icons">east</span>
+              </button>
             </div>
-            <div class="stat-card">
-              <div class="stat-card-icon" style="background:rgba(245,158,11,.1);color:#d97706"><span class="material-icons">pending_actions</span></div>
-              <div class="stat-card-val" id="hStatPending">—</div>
-              <div class="stat-card-label">Oczekujące</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-icon" style="background:rgba(34,197,94,.1);color:#16a34a"><span class="material-icons">payments</span></div>
-              <div class="stat-card-val" id="hStatRevenue">—</div>
-              <div class="stat-card-label">Przychód dziś</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-card-icon" style="background:rgba(244,63,94,.1);color:var(--accent)"><span class="material-icons">event_note</span></div>
-              <div class="stat-card-val" id="hStatTotal">—</div>
-              <div class="stat-card-label">Łącznie wizyt</div>
-            </div>
+            <div id="dashTodayTimeline"><div class="spinner" style="margin:2rem auto"></div></div>
           </div>
 
-          <div class="bookings-list">
-            <div class="bookings-list-header">
-              <h3>Nadchodzące wizyty</h3>
+          <!-- Upcoming appointments -->
+          <div class="dash-panel" style="margin-top:1.25rem">
+            <div class="dash-panel-hdr">
+              <div class="dash-panel-hdr-left">
+                <div class="dash-panel-dot" style="background:#f59e0b"></div>
+                <h3>Nadchodzące wizyty</h3>
+              </div>
+              <span class="dash-count-chip" id="dashUpcomingCount"></span>
             </div>
             <div id="hUpcomingList"><div class="spinner" style="margin:2rem auto"></div></div>
           </div>
         </div>
-        <div class="home-side">
-          <div class="home-widget">
-            <h4>Szybkie akcje</h4>
+
+        <!-- Right column -->
+        <div class="dash-body-side">
+
+          <!-- Quick actions 2×3 grid -->
+          <div class="dash-panel">
+            <div class="dash-panel-hdr" style="margin-bottom:.875rem">
+              <div class="dash-panel-hdr-left">
+                <div class="dash-panel-dot" style="background:#22c55e"></div>
+                <h3>Szybkie akcje</h3>
+              </div>
+            </div>
             <div id="hQuickActions"></div>
           </div>
-          <div class="home-widget" style="margin-top:1.5rem">
+
+          <!-- Revenue sparkline — last 7 days -->
+          <div class="dash-panel" style="margin-top:1.25rem">
+            <div class="dash-panel-hdr" style="margin-bottom:1rem">
+              <div class="dash-panel-hdr-left">
+                <div class="dash-panel-dot" style="background:#a855f7"></div>
+                <h3>Przychód — 7 dni</h3>
+              </div>
+              <strong id="dashRevTotal" class="dash-rev-total-lbl"></strong>
+            </div>
+            <div id="dashRevChart"></div>
+          </div>
+
+          <!-- Staff on duty -->
+          <div class="dash-panel" style="margin-top:1.25rem">
+            <div class="dash-panel-hdr" style="margin-bottom:.875rem">
+              <div class="dash-panel-hdr-left">
+                <div class="dash-panel-dot" style="background:#0ea5e9"></div>
+                <h3>Pracownicy dziś</h3>
+              </div>
+            </div>
             <div id="hStaffOccupancy"></div>
           </div>
         </div>

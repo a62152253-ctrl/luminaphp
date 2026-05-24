@@ -1,7 +1,7 @@
 // admin/schedule.js — Grafik zmian i urlopy
 import { db, collection, getDocs, addDoc, deleteDoc, doc, query, where, serverTimestamp }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
+import { formatDateKey, toast } from '../modules/utils.js';
 
 let _bizId, _staff;
 let _shifts    = [];
@@ -82,7 +82,7 @@ function renderSchedule() {
 }
 
 function renderWeekGrid(days) {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = formatDateKey();
   const cols = days.map(d => {
     const key       = isoDate(d);
     const isToday   = key === todayStr;
@@ -112,7 +112,7 @@ function renderMonthGrid() {
   const month = _currentDate.getMonth();
   const first = new Date(year, month, 1);
   const last  = new Date(year, month + 1, 0);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDateKey();
 
   const dayNames = ['Pn','Wt','Śr','Cz','Pt','So','Nd'];
   let html = `<div class="sched-month-grid">`;
@@ -194,7 +194,7 @@ function openShiftModal(date = '') {
   if (!modal) return;
 
   const dateEl = document.getElementById('shiftDate');
-  if (dateEl) dateEl.value = date || new Date().toISOString().slice(0, 10);
+  if (dateEl) dateEl.value = date || formatDateKey();
 
   const staffEl = document.getElementById('shiftStaff');
   if (staffEl) {
@@ -250,7 +250,7 @@ function openVacationModal() {
       _staff.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDateKey();
   const vacStartEl = document.getElementById('vacStart');
   const vacEndEl   = document.getElementById('vacEnd');
   if (vacStartEl) vacStartEl.value = today;

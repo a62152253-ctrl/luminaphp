@@ -58,12 +58,42 @@ function applyMapFilters() {
   renderSidebarList(filtered);
 }
 
+const CAT_COLOR = {
+  'Barber':       '#3b82f6',
+  'Fryzjer':      '#8b5cf6',
+  'Paznokcie':    '#ec4899',
+  'Kosmetyczka':  '#f43f5e',
+  'Masaż':        '#14b8a6',
+  'Brwi i Rzęsy': '#f59e0b',
+  'Fizjoterapia': '#22c55e',
+  'Tatuaż':       '#475569',
+};
+
 function renderSidebarList(biz) {
   const el = document.getElementById('mapSidebarList');
   if (!el) return;
-  el.innerHTML = biz.slice(0, 20).map(b => `
-    <a href="?page=business&id=${escHtml(b.id)}" class="map-sidebar-item">
-      <strong>${escHtml(b.name)}</strong>
-      <span>${escHtml(b.category)} · ${escHtml(b.city || '')}</span>
-    </a>`).join('');
+
+  if (!biz.length) {
+    el.innerHTML = `<div class="map-sidebar-empty">
+      <span class="material-icons">search_off</span>
+      Brak salonów w tym obszarze
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = biz.slice(0, 25).map(b => {
+    const color = CAT_COLOR[b.category] || '#a1a1aa';
+    return `
+      <a href="?page=business&id=${escHtml(b.id)}" class="map-sidebar-item">
+        <span class="map-sidebar-dot" style="background:${color}"></span>
+        <div class="map-sidebar-item-body">
+          <strong class="map-sidebar-item-name">${escHtml(b.name)}</strong>
+          <div class="map-sidebar-item-meta">
+            <span class="map-sidebar-cat" style="color:${color}">${escHtml(b.category)}</span>
+            ${b.city ? `<span class="map-sidebar-city">· ${escHtml(b.city)}</span>` : ''}
+          </div>
+        </div>
+        <span class="material-icons map-sidebar-arrow">chevron_right</span>
+      </a>`;
+  }).join('');
 }

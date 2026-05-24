@@ -1,7 +1,7 @@
 import { loadBusinesses, getPopularCategories } from '../modules/businesses.js';
 import { loadFavoriteIds, isFavorite, toggleFavorite } from '../modules/favorites.js';
 import { db, collection, getDocs } from '../firebase-config.js';
-import { localStore } from '../modules/utils.js';
+import { localStore, waitForGlobal } from '../modules/utils.js';
 
 const RECENTLY_VIEWED_KEY = 'lumina_recently_viewed';
 let _homeBusinesses = [];
@@ -63,12 +63,7 @@ let _featuredSwiper = null;
 let _promosSwiper   = null;
 
 function initSwipers() {
-  const wait = (cb) => {
-    if (window.Swiper) { cb(); return; }
-    const t = setInterval(() => { if (window.Swiper) { clearInterval(t); cb(); } }, 80);
-  };
-
-  wait(() => {
+  waitForGlobal('Swiper', () => {
     if (!_featuredSwiper) {
       _featuredSwiper = new Swiper('.featured-swiper', {
         slidesPerView: 1.1, spaceBetween: 16, centeredSlides: false,
@@ -92,7 +87,7 @@ function initSwipers() {
         a11y: { prevSlideMessage: 'Poprzednia promocja', nextSlideMessage: 'Następna promocja' },
       });
     }
-  });
+  }, { intervalMs: 80 });
 }
 
 export async function initHome() {

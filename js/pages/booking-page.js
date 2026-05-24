@@ -1,6 +1,6 @@
 import { getBusinessById, loadServices, loadStaff } from '../modules/businesses.js';
 import { db, collection, addDoc, getDocs, query, where, serverTimestamp } from '../firebase-config.js';
-import { toast, formatDuration, escHtml } from '../modules/utils.js';
+import { escHtml, formatDateKey, formatDuration, isCancelledStatus, toast } from '../modules/utils.js';
 import { addToCalendar, getBookedTimesForDay } from '../modules/booking-mgr.js';
 
 const STATE_KEY = 'lumina_booking';
@@ -14,7 +14,7 @@ function restoreState(bizId) {
     const s = JSON.parse(sessionStorage.getItem(STATE_KEY) || '{}');
     if (s.bizId === bizId) return s;
   } catch(e) {}
-  return { bizId, service: null, staff: null, date: new Date().toISOString().split('T')[0], time: null };
+  return { bizId, service: null, staff: null, date: formatDateKey(), time: null };
 }
 
 export async function initBooking(bizId) {
@@ -26,7 +26,7 @@ export async function initBooking(bizId) {
   const saved = restoreState(bizId);
   state.service = saved.service;
   state.staff   = saved.staff;
-  state.date    = saved.date || new Date().toISOString().split('T')[0];
+  state.date    = saved.date || formatDateKey();
   state.time    = saved.time;
 
   const step = Number(state.step);
@@ -112,7 +112,7 @@ function renderStep3(state) {
     dateGrid.innerHTML = Array.from({length: 30}, (_, i) => {
       const d = new Date(today);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatDateKey(d);
       const isToday = i === 0;
       return `<button class="date-btn${dateStr === state.date ? ' selected' : ''}" data-date="${dateStr}"
         onclick="selectDateStep(this,'${dateStr}')" title="${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}">
@@ -192,7 +192,7 @@ async function renderStep4(bizId, state) {
     const newEnd   = newStart + (duration || 60);
     return snap.docs.some(d => {
       const a = d.data();
-      if (['cancelled','anulowana'].includes(a.status)) return false;
+      if (isCancelledStatus(a.status)) return false;
       const s = toMin(a.time || '00:00');
       return newStart < s + (Number(a.duration)||60) && s < newEnd;
     });

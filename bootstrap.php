@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/functions/http.php';
+
 // ─── 1. Load .env ────────────────────────────────────────────────────────────
 
 (static function (): void {
@@ -14,13 +16,25 @@ declare(strict_types=1);
         if ($line === '' || $line[0] === '#') {
             continue;
         }
+        if (str_starts_with($line, 'export ')) {
+            $line = substr($line, 7);
+        }
         if (!str_contains($line, '=')) {
             continue;
         }
         [$key, $value] = explode('=', $line, 2);
         $key   = trim($key);
         $value = trim($value);
-        // Strip surrounding quotes
+
+        if (
+            $value !== ''
+            && $value[0] !== '"'
+            && $value[0] !== "'"
+            && preg_match('/\s+#/', $value, $matches, PREG_OFFSET_CAPTURE) === 1
+        ) {
+            $value = rtrim(substr($value, 0, $matches[0][1]));
+        }
+
         if (strlen($value) >= 2 && $value[0] === '"' && $value[-1] === '"') {
             $value = stripslashes(substr($value, 1, -1));
         } elseif (strlen($value) >= 2 && $value[0] === "'" && $value[-1] === "'") {
@@ -28,6 +42,7 @@ declare(strict_types=1);
         }
         if (!array_key_exists($key, $_ENV)) {
             $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
             putenv("{$key}={$value}");
         }
     }
@@ -55,10 +70,13 @@ require_once __DIR__ . '/functions/layout.php';
 // ─── 5. Session ───────────────────────────────────────────────────────────────
 
 if (session_status() === PHP_SESSION_NONE) {
-    $secure   = filter_var($_ENV['SESSION_SECURE']   ?? false, FILTER_VALIDATE_BOOLEAN);
-    $httponly = filter_var($_ENV['SESSION_HTTPONLY']  ?? true,  FILTER_VALIDATE_BOOLEAN);
+    $secure   = lumina_env_bool($_ENV['SESSION_SECURE'] ?? null, lumina_is_https());
+    $httponly = lumina_env_bool($_ENV['SESSION_HTTPONLY'] ?? null, true);
     $samesite = $_ENV['SESSION_SAMESITE'] ?? 'Lax';
     $lifetime = (int)($_ENV['SESSION_LIFETIME'] ?? 3600);
+
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.use_strict_mode', '1');
 
     session_set_cookie_params([
         'lifetime' => $lifetime,
@@ -81,7 +99,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // ─── 6. Security headers ──────────────────────────────────────────────────────
 
-if (filter_var($_ENV['SECURITY_HEADERS_ENABLED'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
+if (lumina_env_bool($_ENV['SECURITY_HEADERS_ENABLED'] ?? null, true)) {
     $csp = $_ENV['CONTENT_SECURITY_POLICY'] ?? implode('; ', [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://fonts.googleapis.com https://unpkg.com https://cdn.jsdelivr.net https://accounts.google.com",
@@ -102,7 +120,7 @@ if (filter_var($_ENV['SECURITY_HEADERS_ENABLED'] ?? true, FILTER_VALIDATE_BOOLEA
     header('Permissions-Policy: geolocation=(self), microphone=(), camera=()');
     header('Cross-Origin-Opener-Policy: same-origin-allow-popups'); // Allow Google OAuth popups
     header_remove('X-Powered-By');
-    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+    if (lumina_is_https()) {
         header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
     }
 }
@@ -110,19 +128,20 @@ if (filter_var($_ENV['SECURITY_HEADERS_ENABLED'] ?? true, FILTER_VALIDATE_BOOLEA
 // ─── 7. CORS ─────────────────────────────────────────────────────────────────
 
 (static function (): void {
-    $origin  = $_SERVER['HTTP_ORIGIN'] ?? '';
-    $allowed = array_filter(array_map(
-        'trim',
-        explode(',', $_ENV['CORS_ALLOWED_ORIGINS'] ?? '')
-    ));
-    if ($origin && in_array($origin, $allowed, true)) {
+    $origin = trim((string) ($_SERVER['HTTP_ORIGIN'] ?? ''));
+    $allowed = lumina_parse_csv_env((string) ($_ENV['CORS_ALLOWED_ORIGINS'] ?? ''));
+
+    if ($origin !== '' && in_array($origin, $allowed, true)) {
         $methods = $_ENV['CORS_ALLOWED_METHODS'] ?? 'GET,POST,PUT,DELETE,OPTIONS';
         $headers = $_ENV['CORS_ALLOWED_HEADERS'] ?? 'Content-Type,Authorization,X-CSRF-Token';
+        header('Vary: Origin');
         header("Access-Control-Allow-Origin: {$origin}");
         header("Access-Control-Allow-Methods: {$methods}");
         header("Access-Control-Allow-Headers: {$headers}");
         header('Access-Control-Allow-Credentials: true');
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        header('Access-Control-Max-Age: 86400');
+
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'OPTIONS') {
             http_response_code(204);
             exit;
         }

@@ -1,8 +1,7 @@
 // admin-page.js — koordynator, importuje 13 modułów
 import { db, collection, getDocs, query, where, doc, getDoc }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
-import { initMobileNav } from '../modules/mobile-nav.js';
+import { formatDateKey, isRevenueStatus, toast } from '../modules/utils.js';
 import { exportAppointmentsCSV } from '../modules/csv-export.js';
 
 import { initDashboard }  from '../admin/dashboard.js';
@@ -38,7 +37,7 @@ export async function initAdmin() {
     _bizDoc = snap.exists() ? { id: snap.id, ...snap.data() } : null;
   } catch(e) { _bizDoc = null; }
 
-  if (!_bizDoc) { renderPrompt('storefront', 'Brak profilu salonu', 'Skontaktuj się z administratorem.'); return; }
+  if (!_bizDoc) { window.location.href = '/luminaphp/?page=setup'; return; }
 
   // Guard: profil musi być ukończony
   if (!_bizDoc.profileComplete) {
@@ -55,7 +54,6 @@ export async function initAdmin() {
 
   renderAdminShell();
   initTabs();
-  initMobileNav();
 
   // Default tab: dashboard
   switchTab('home');
@@ -120,11 +118,11 @@ function renderAdminShell() {
   }
 
   // Stats bar
-  const today = new Date().toISOString().slice(0,10);
+  const today = formatDateKey();
   const todayAppts = _appts.filter(a => a.date === today);
   const pending    = _appts.filter(a => a.status === 'pending' || a.status === 'zaplanowana');
   const revenue    = todayAppts.filter(a =>
-    ['confirmed','zakończona','completed'].includes(a.status))
+    isRevenueStatus(a.status))
     .reduce((s,a) => s + (Number(a.price)||0), 0);
 
   _setText('adminStatToday',   todayAppts.length);

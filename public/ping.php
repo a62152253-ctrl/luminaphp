@@ -1,6 +1,10 @@
 <?php
-http_response_code(200);
-header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-store');
-header('X-Content-Type-Options: nosniff');
-echo json_encode(['status' => 'ok', 'ts' => time()]);
+
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/functions/http.php';
+
+lumina_json_response([
+    'status' => 'ok',
+    'ts' => time(),
+]);

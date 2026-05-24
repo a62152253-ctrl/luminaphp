@@ -1,5 +1,15 @@
 import { db, collection, addDoc, updateDoc, doc, getDocs, query, where, serverTimestamp } from '../firebase-config.js';
-import { toast, confirmAction, statusLabel, escHtml, formatCurrency, formatDatePl } from './utils.js';
+import {
+  appointmentStatusLabel,
+  confirmAction,
+  escHtml,
+  formatCurrency,
+  formatDateKey,
+  formatDatePl,
+  isCancelledStatus,
+  statusBadgeClass,
+  toast,
+} from './utils.js';
 
 let _booking = { serviceId:null, staffId:null, date:null, time:null };
 let _services = [];
@@ -10,18 +20,18 @@ export function setStaff(staff) { _staff = staff; }
 export function getBookingState() { return _booking; }
 
 export function initBookingPanel(daysAhead = 30) {
-  _booking = { serviceId:null, staffId:null, date: new Date().toISOString().split('T')[0], time:null };
+  _booking = { serviceId:null, staffId:null, date: formatDateKey(), time:null };
 
   const dateGrid = document.getElementById('dateGrid');
   if (dateGrid) {
     const days = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
     const months = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = formatDateKey(today);
     dateGrid.innerHTML = Array.from({length: daysAhead}, (_, i) => {
       const d = new Date(today);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatDateKey(d);
       const isToday = dateStr === todayStr;
       return `<button class="date-btn${isToday ? ' selected' : ''}" data-date="${dateStr}" onclick="window.selectDate(this)" title="${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}">
         <span class="day-name">${days[d.getDay()]}</span>
@@ -108,7 +118,7 @@ async function hasConflict(staffId, date, time, duration) {
   const newEnd   = newStart + (duration || 60);
   return snap.docs.some(d => {
     const a = d.data();
-    if (['cancelled', 'anulowana'].includes(a.status)) return false;
+    if (isCancelledStatus(a.status)) return false;
     const aStart = timeToMin(a.time || '00:00');
     const aEnd   = aStart + (Number(a.duration) || 60);
     return newStart < aEnd && aStart < newEnd;
@@ -224,7 +234,7 @@ export async function getBookedTimesForDay(staffId, date) {
     ));
     return snap.docs
       .map(d => d.data())
-      .filter(a => !['cancelled', 'anulowana'].includes(a.status))
+      .filter(a => !isCancelledStatus(a.status))
       .map(a => a.time)
       .filter(Boolean);
   } catch(_) { return []; }
@@ -244,7 +254,7 @@ export function renderAppointments(list, containerId = 'appointmentsList') {
   }
 
   el.innerHTML = list.map(a => {
-    const cancelled = ['cancelled', 'anulowana'].includes(a.status);
+    const cancelled = isCancelledStatus(a.status);
     const date = getAppointmentDate(a);
     const dayLabel = date
       ? date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '').toUpperCase()
@@ -265,7 +275,7 @@ export function renderAppointments(list, containerId = 'appointmentsList') {
                 <div class="booking-item-salon">${escHtml(a.serviceName || 'Usługa')}</div>
                 <div class="booking-item-service">${escHtml(a.businessName || 'Wybrany salon')}</div>
               </div>
-              <span class="badge-status ${statusClassFor(a.status)}">${escHtml(statusLabel(a.status))}</span>
+              <span class="badge-status ${statusClassFor(a.status)}">${escHtml(appointmentStatusLabel(a.status))}</span>
             </div>
 
             <div class="booking-item-meta">
@@ -318,9 +328,7 @@ export function renderAppointments(list, containerId = 'appointmentsList') {
 }
 
 function statusClassFor(status) {
-  if (['confirmed', 'potwierdzona', 'w trakcie', 'completed', 'zakończona'].includes(status)) return 'badge-confirmed';
-  if (['cancelled', 'anulowana', 'nie przyszedł'].includes(status)) return 'badge-cancelled';
-  return 'badge-pending';
+  return statusBadgeClass(status);
 }
 
 function getAppointmentDate(appt) {

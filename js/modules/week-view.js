@@ -1,3 +1,5 @@
+import { formatDateKey } from './utils.js';
+
 const DAYS_SHORT = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
 const HOURS = ['08','09','10','11','12','13','14','15','16','17','18','19','20'];
 
@@ -20,7 +22,7 @@ export function renderWeekView(containerId, appointments, anchorDate) {
   if (!el) return;
 
   const weekDates = getWeekDates(anchorDate);
-  const todayStr  = new Date().toISOString().split('T')[0];
+  const todayStr  = formatDateKey();
 
   // Build lookup: "YYYY-MM-DD_HH" -> appointments[]
   const lookup = {};
@@ -38,7 +40,7 @@ export function renderWeekView(containerId, appointments, anchorDate) {
   const headerCells = [
     '<div class="biz-week-col-header" style="background:var(--zinc-50)"></div>',
     ...weekDates.map(d => {
-      const ds      = d.toISOString().split('T')[0];
+      const ds      = formatDateKey(d);
       const isToday = ds === todayStr;
       return `<div class="biz-week-col-header${isToday ? ' is-today' : ''}">
         <div class="biz-week-col-day">${DAYS_SHORT[d.getDay()]}</div>
@@ -50,7 +52,7 @@ export function renderWeekView(containerId, appointments, anchorDate) {
   // Body
   const bodyRows = HOURS.map(hour => {
     const timeCells = weekDates.map(d => {
-      const ds      = d.toISOString().split('T')[0];
+      const ds      = formatDateKey(d);
       const isToday = ds === todayStr;
       const appts   = lookup[`${ds}_${hour}`] || [];
       const events  = appts.map(a => {

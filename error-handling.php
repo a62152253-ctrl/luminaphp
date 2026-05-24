@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/functions/http.php';
+
 /**
  * Centralised error and exception handling for Lumina.
  * Include this file once at the application bootstrap (index.php).
@@ -16,30 +18,36 @@ ini_set('log_errors', '1');
 ini_set('error_log', __DIR__ . '/storage/logs/error.log');
 error_reporting(E_ALL);
 
-if (function_exists('lumina_log')) {
-    set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
-        if (!($errno & error_reporting())) {
-            return false;
-        }
-        $level = match (true) {
-            in_array($errno, [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true) => 'error',
-            in_array($errno, [E_WARNING, E_CORE_WARNING, E_COMPILE_WARNING, E_USER_WARNING], true) => 'warning',
-            default => 'notice',
-        };
-        lumina_log($level, $errstr, ['file' => $errfile, 'line' => $errline]);
-        return $level !== 'notice';
-    });
+set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
+    if (!($errno & error_reporting())) {
+        return false;
+    }
 
-    set_exception_handler(function (Throwable $e) use ($appDebug): void {
+    $level = match (true) {
+        in_array($errno, [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true) => 'error',
+        in_array($errno, [E_WARNING, E_CORE_WARNING, E_COMPILE_WARNING, E_USER_WARNING], true) => 'warning',
+        default => 'notice',
+    };
+
+    if (function_exists('lumina_log')) {
+        lumina_log($level, $errstr, ['file' => $errfile, 'line' => $errline]);
+    }
+
+    return $level !== 'notice';
+});
+
+set_exception_handler(function (Throwable $e) use ($appDebug): void {
+    if (function_exists('lumina_log')) {
         lumina_log('critical', $e->getMessage(), [
             'exception' => get_class($e),
             'file'      => $e->getFile(),
             'line'      => $e->getLine(),
             'trace'     => $e->getTraceAsString(),
         ]);
-        render_error_page(500, $appDebug ? $e : null);
-    });
-}
+    }
+
+    render_error_page(500, $appDebug ? $e : null);
+});
 
 register_shutdown_function(function () use ($appDebug): void {
     $error = error_get_last();
@@ -57,29 +65,29 @@ register_shutdown_function(function () use ($appDebug): void {
 
 function render_error_page(int $code, ?Throwable $e = null): void
 {
-    if (headers_sent()) {
-        return;
+    while (ob_get_level() > 0) {
+        ob_end_clean();
     }
-    http_response_code($code);
-    
-    // Security headers
-    header('X-Content-Type-Options: nosniff');
-    header('X-Frame-Options: DENY');
-    header('X-XSS-Protection: 0');
-    header('Referrer-Policy: strict-origin-when-cross-origin');
 
-    $isJson = str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')
-           || str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
+    $isJson = lumina_request_wants_json();
 
     if ($isJson) {
-        header('Content-Type: application/json; charset=utf-8');
         $body = ['error' => http_response_phrase($code), 'status' => $code];
         if ($e) {
             $body['message'] = $e->getMessage();
             $body['trace']   = $e->getTrace();
         }
-        echo json_encode($body, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-        exit;
+
+        lumina_json_response($body, $code);
+    }
+
+    if (!headers_sent()) {
+        http_response_code($code);
+        header('Cache-Control: no-store');
+        header('X-Content-Type-Options: nosniff');
+        header('X-Frame-Options: DENY');
+        header('X-XSS-Protection: 0');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
     }
 
     $messages = [

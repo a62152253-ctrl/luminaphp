@@ -1,6 +1,8 @@
+import { formatDateKey, isCancelledStatus, isRevenueStatus } from './utils.js';
+
 export function computeKPIs(appointments) {
-  const confirmed = appointments.filter(a => a.status === 'confirmed');
-  const cancelled = appointments.filter(a => a.status === 'cancelled');
+  const confirmed = appointments.filter(a => isRevenueStatus(a.status));
+  const cancelled = appointments.filter(a => isCancelledStatus(a.status));
   const revenue   = confirmed.reduce((s, a) => s + (a.price || 0), 0);
   const avgValue  = confirmed.length ? Math.round(revenue / confirmed.length) : 0;
   const conversion = appointments.length
@@ -18,7 +20,7 @@ export function computeKPIs(appointments) {
   const topService = Object.entries(svcCount).sort((a, b) => b[1] - a[1])[0] || null;
 
   // Today
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatDateKey();
   const todayCount = appointments.filter(a => a.date === todayStr).length;
 
   // This month revenue

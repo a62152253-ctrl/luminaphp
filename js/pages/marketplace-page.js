@@ -2,7 +2,7 @@
 import { db, collection, getDocs, addDoc, query, where, orderBy, limit, serverTimestamp }
   from '../firebase-config.js';
 import { loadBusinesses } from '../modules/businesses.js';
-import { escHtml, debounce, toast } from '../modules/utils.js';
+import { escHtml, debounce, formatDateKey, toast } from '../modules/utils.js';
 
 let _businesses = [];
 
@@ -368,7 +368,7 @@ function openGroupBookingModal() {
   if (!modal) return;
 
   const dateEl = document.getElementById('groupDate');
-  if (dateEl) dateEl.value = new Date().toISOString().slice(0, 10);
+  if (dateEl) dateEl.value = formatDateKey();
 
   modal.classList.remove('hidden');
 

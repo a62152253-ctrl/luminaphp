@@ -53,14 +53,4 @@ $mapCategories = ['Barber','Fryzjer','Paznokcie','Kosmetyczka','Masaż','Brwi i 
     role="application" aria-label="Interaktywna mapa salonów beauty"></div>
 </div>
 
-<!-- Leaflet CSS loaded by index.php for map/explore/business pages — only load MarkerCluster here -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
-  crossorigin="anonymous">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
-  crossorigin="anonymous">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
-  crossorigin="anonymous"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"
-  crossorigin="anonymous"></script>
+<!-- Leaflet, MarkerCluster, and Heat are loaded by index.php in <head> via lumina_head_scripts() -->

@@ -1,5 +1,5 @@
 // setup-page.js — onboarding profilu salonu
-import { db, doc, updateDoc, getDoc, collection, query, where, getDocs, serverTimestamp } from '../firebase-config.js';
+import { db, doc, setDoc, getDoc, collection, query, where, getDocs, serverTimestamp } from '../firebase-config.js';
 import { toast } from '../modules/utils.js';
 import { getUserLocation, geocodeAddress, reverseGeocode } from '../modules/geo.js';
 import {
@@ -261,7 +261,8 @@ async function finishSetup(bizId) {
   const category = document.getElementById('setupCategory')?.value                   || '';
   const desc     = document.getElementById('setupDesc')?.value.trim()                || '';
   const phone    = document.getElementById('setupPhone')?.value.trim()               || '';
-  const nip      = (document.getElementById('setupNip')?.value || '').replace(/\D/g, '');
+  const nipRaw   = (document.getElementById('setupNip')?.value || '').replace(/\D/g, '');
+  const nip      = (nipRaw && isValidNip(nipRaw)) ? nipRaw : '';
   const website  = document.getElementById('setupWebsite')?.value.trim()             || '';
   const city     = document.getElementById('setupCity')?.value.trim()                || '';
   const address  = document.getElementById('setupAddress')?.value.trim()             || '';
@@ -326,7 +327,7 @@ async function finishSetup(bizId) {
       updatedAt: serverTimestamp(),
     };
 
-    await updateDoc(doc(db, 'businesses', bizId), data);
+    await setDoc(doc(db, 'businesses', bizId), data, { merge: true });
     toast('Profil salonu utworzony i gotowy do działania!', 'success');
     window.location.href = '/luminaphp/?page=admin';
   } catch(e) {

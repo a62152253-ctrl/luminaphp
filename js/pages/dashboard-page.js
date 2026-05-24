@@ -5,7 +5,7 @@ import { cancelBooking, addToCalendar } from '../modules/booking-mgr.js';
 import { loadFavoriteIds, renderFavoritesGrid, toggleFavorite } from '../modules/favorites.js';
 import { loadBusinesses } from '../modules/businesses.js';
 import { exportAppointmentsCSV } from '../modules/csv-export.js';
-import { toast, spinner } from '../modules/utils.js';
+import { formatDateKey, spinner, toast } from '../modules/utils.js';
 import { getPoints, getTier } from '../modules/loyalty.js';
 import {
   DashState, initDashboardTabs, initBookingFilters, initBookingSearch, initViewToggle,
@@ -134,7 +134,7 @@ function bindModals() {
   // Journal modal
   document.getElementById('addJournalBtn')?.addEventListener('click', () => {
     document.getElementById('journalModal')?.classList.remove('hidden');
-    document.getElementById('journalDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('journalDate').value = formatDateKey();
   });
   const closeJournal = () => {
     document.getElementById('journalModal')?.classList.add('hidden');

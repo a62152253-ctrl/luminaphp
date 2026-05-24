@@ -19,9 +19,14 @@ import { trackClick } from './modules/referral.js';
 registerServiceWorker();
 
 // ===== PERFORMANCE TIMING =====
+const PERF_DEBUG =
+  /^(localhost|127\.0\.0\.1)$/i.test(location.hostname) ||
+  localStorage.getItem('lumina_debug') === '1';
+
 const _perf = {
   t0: performance.now(),
   mark(label) {
+    if (!PERF_DEBUG) return;
     const ms = (performance.now() - this.t0).toFixed(0);
     console.log(`%c[Lumina Perf] ${label}: ${ms}ms`, 'color:#6366f1;font-weight:bold');
   },
@@ -29,9 +34,11 @@ const _perf = {
     const t = performance.now();
     try {
       const r = await fn();
+      if (!PERF_DEBUG) return r;
       console.log(`%c[Lumina Perf] ${label}: ${(performance.now() - t).toFixed(0)}ms`, 'color:#10b981;font-weight:bold');
       return r;
     } catch(e) {
+      if (!PERF_DEBUG) throw e;
       console.log(`%c[Lumina Perf] ${label} FAILED: ${(performance.now() - t).toFixed(0)}ms`, 'color:#ef4444;font-weight:bold');
       throw e;
     }
@@ -83,6 +90,7 @@ listenAuth(async user => {
   }
 
   window.App._ready = true;
+  window.dispatchEvent(new Event('app:ready'));
 });
 
 async function handleAuthRedirects(user, userDoc, currentPage) {

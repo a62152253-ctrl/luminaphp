@@ -1,7 +1,7 @@
 // admin/staff.js — Pracownicy + Grafik + Prowizje + Cele (KPI)
 import { db, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, serverTimestamp }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
+import { isRevenueStatus, toast } from '../modules/utils.js';
 import { initSchedule } from './schedule.js';
 
 const COLORS = ['#6366f1','#ec4899','#f59e0b','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ef4444'];
@@ -85,7 +85,7 @@ function staffCard(s) {
     <div class="biz-staff-role-badge">${esc(s.role || 'pracownik')}</div>
     ${s.commission ? `<div class="biz-staff-commission">Prowizja: ${s.commission}%</div>` : ''}
     <div class="biz-card-actions" style="margin-top:.75rem">
-      <button class="biz-card-btn" onclick="bizOpenStaffModal('${s.id}','${esc(s.name)}','${esc(s.title||'')}','${esc(s.photoURL||'')}','${esc(s.role||'')}','${s.color}',${Number(s.commission||0)})">
+      <button class="biz-card-btn" onclick="bizOpenStaffModal('${esc(s.id)}','${esc(s.name)}','${esc(s.title||'')}','${esc(s.photoURL||'')}','${esc(s.role||'')}','${esc(s.color)}',${Number(s.commission||0)})">
         <span class="material-icons">edit</span>
       </button>
       <button class="biz-card-btn biz-card-btn-del" onclick="bizDeleteStaff('${s.id}')">
@@ -320,7 +320,7 @@ async function renderKPI() {
 // ===== HELPERS =====
 
 function completedStatus(s) {
-  return ['confirmed', 'zakończona', 'completed'].includes(s);
+  return isRevenueStatus(s);
 }
 
 const esc = s => String(s ?? '').replace(/</g, '&lt;').replace(/'/g, "\\'");

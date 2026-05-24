@@ -1,7 +1,7 @@
 // admin/offers.js — Oferty i Promocje z systemem Freemium
 import { db, collection, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, serverTimestamp }
   from '../firebase-config.js';
-import { toast, confirmAction, escHtml } from '../modules/utils.js';
+import { toast, confirmAction } from '../modules/utils.js';
 import { getSubscription, hasActiveAccess, processPayment, getPlans } from '../modules/payment.js';
 
 const FREE_LIMIT    = 2;
@@ -300,9 +300,9 @@ function switchOffersSubTab(tab) {
   Object.entries(panels).forEach(([key, id]) => {
     document.getElementById(id)?.classList.toggle('hidden', key !== tab);
   });
-  if (tab === 'flash'   && !_flashDeals.length) loadFlashDeals().then(renderFlashDeals);
-  if (tab === 'bundles' && !_bundles.length)    loadBundleList().then(renderBundles);
-  if (tab === 'subs'    && !_subs.length)       loadSubs().then(renderSubs);
+  if (tab === 'flash'   && !_flashDeals.length) loadFlashDeals().then(() => renderFlashDeals());
+  if (tab === 'bundles' && !_bundles.length)    loadBundleList().then(() => renderBundles());
+  if (tab === 'subs'    && !_subs.length)       loadSubs().then(() => renderSubs());
 }
 
 function openAddModal() {
@@ -659,81 +659,6 @@ async function saveSub() {
     document.getElementById('subModal')?.classList.add('hidden');
     renderSubs();
   } catch(e) { toast('Błąd zapisu', 'error'); }
-}
-
-function deleteSub(id) {
-  confirmAction('Usunąć plan subskrypcji? Tego nie można cofnąć.', async () => {
-    try {
-      await deleteDoc(doc(db, 'subscriptions', id));
-      _subs = _subs.filter(s => s.id !== id);
-      renderSubs();
-      toast('Plan usunięty');
-    } catch { toast('Błąd usuwania', 'error'); }
-  });
-}
-
-  el.innerHTML = `<div class="biz-services-grid">` + _subs.map(s => {
-    const feats = Array.isArray(s.features)
-      ? s.features.map(f => `<li>${esc(f)}</li>`).join('')
-      : '';
-    return `<div class="biz-promo-card" style="${s.popular ? 'border:2px solid var(--accent)' : ''}">
-      ${s.popular ? '<div class="biz-promo-badge" style="background:#6366f1">Popularne</div>' : ''}
-      <div class="biz-promo-body">
-        <div class="biz-promo-title">${esc(s.name)}</div>
-        ${s.description ? `<p style="font-size:.8rem;color:var(--zinc-500);margin:.2rem 0">${esc(s.description)}</p>` : ''}
-        <div class="biz-promo-prices">
-          <span class="biz-promo-disc">${s.price} zł<span style="font-weight:400;font-size:.8rem">/mies.</span></span>
-        </div>
-        <div style="font-size:.78rem;color:var(--zinc-500);margin-top:.25rem">${s.visitsPerMonth} wizyt/miesiąc</div>
-        ${feats ? `<ul style="font-size:.78rem;color:var(--zinc-500);margin:.4rem 0;padding-left:1.2rem">${feats}</ul>` : ''}
-      </div>
-      <div class="biz-card-actions">
-        <button class="biz-card-btn biz-card-btn-del" onclick="bizDeleteSub('${s.id}')">
-          <span class="material-icons">delete</span>
-        </button>
-      </div>
-    </div>`;
-  }).join('') + `</div>`;
-}
-
-function openSubModal() {
-  document.getElementById('subEditId').value  = '';
-  document.getElementById('subName').value    = '';
-  document.getElementById('subDesc').value    = '';
-  document.getElementById('subPrice').value   = '';
-  document.getElementById('subVisits').value  = '';
-  document.getElementById('subFeatures').value= '';
-  document.getElementById('subPopular').checked = false;
-  document.getElementById('subModal')?.classList.remove('hidden');
-}
-
-async function saveSub() {
-  const name    = document.getElementById('subName').value.trim();
-  const desc    = document.getElementById('subDesc').value.trim();
-  const price   = parseInt(document.getElementById('subPrice').value) || 0;
-  const visits  = parseInt(document.getElementById('subVisits').value) || 0;
-  const rawFeat = document.getElementById('subFeatures').value;
-  const popular = document.getElementById('subPopular').checked;
-
-  if (!name)   { toast('Podaj nazwę planu', 'error'); return; }
-  if (!price)  { toast('Podaj cenę miesięczną', 'error'); return; }
-  if (!visits) { toast('Podaj liczbę wizyt w miesiącu', 'error'); return; }
-
-  const features = rawFeat.split('\n').map(f => f.trim()).filter(Boolean);
-  const data = {
-    businessId:     _bizId,
-    businessName:   _bizDoc?.name || '',
-    name, description: desc, price, visitsPerMonth: visits, features, popular, active: true,
-    createdAt:      serverTimestamp(),
-  };
-
-  try {
-    const ref = await addDoc(collection(db, 'subscriptions'), data);
-    _subs.push({ id: ref.id, ...data });
-    document.getElementById('subModal')?.classList.add('hidden');
-    renderSubs();
-    toast('Plan subskrypcji zapisany!', 'success');
-  } catch { toast('Błąd zapisu', 'error'); }
 }
 
 function deleteSub(id) {

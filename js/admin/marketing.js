@@ -1,7 +1,7 @@
 // admin/marketing.js — Kampanie marketingowe
 import { db, collection, getDocs, addDoc, query, where, orderBy, serverTimestamp }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
+import { formatDateKey, toast } from '../modules/utils.js';
 
 let _bizId;
 let _clients = []; // derived from appts
@@ -60,10 +60,12 @@ function buildClientList(appts) {
         name:     a.clientName || a.userName || 'Klient',
         email:    a.clientEmail || '',
         phone:    a.clientPhone || '',
+        birthday: a.clientBirthday || '',
         lastDate: a.date || '',
         appts:    [],
       };
     }
+    if (a.clientBirthday && !map[key].birthday) map[key].birthday = a.clientBirthday;
     map[key].appts.push(a);
     if ((a.date || '') > (map[key].lastDate || '')) map[key].lastDate = a.date;
   });
@@ -141,18 +143,18 @@ function updateRecipients(type) {
 
   const fourWeeksAgo = new Date();
   fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-  const cutoff = fourWeeksAgo.toISOString().slice(0, 10);
+  const cutoff = formatDateKey(fourWeeksAgo);
 
   const thisMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
   let recipients = _clients;
   if (type === 'birthday') {
+    const mm = String(new Date().getMonth() + 1).padStart(2, '0');
     recipients = _clients.filter(c => {
-      // clients.js stores birthday in Firestore; here we approximate from appts data
-      return false; // actual birthday data comes from Firestore clients collection
+      if (!c.birthday) return false;
+      const bm = String(c.birthday).slice(5, 7) || String(c.birthday).slice(0, 2);
+      return bm === mm;
     });
-    // Fallback: just use all clients if no birthday data
-    if (!recipients.length) recipients = _clients;
   } else if (type === 'rebook') {
     recipients = _clients.filter(c => !c.lastDate || c.lastDate < cutoff);
   }

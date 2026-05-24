@@ -21,7 +21,15 @@ $portfolioImgs = [
   <div class="biz-detail-info">
     <div class="container">
       <span id="bizCat" class="biz-detail-cat" aria-label="Kategoria salonu">Ładowanie…</span>
-      <h1 id="bizNameText" class="biz-detail-name">Ładowanie…</h1>
+      <div class="biz-name-row">
+        <h1 id="bizNameText" class="biz-detail-name">Ładowanie…</h1>
+        <button class="biz-report-btn" id="reclaimTrigger"
+          onclick="window.openReclaimModal()"
+          aria-label="Zgłoś problem z tym profilem"
+          title="Zgłoś problem">
+          <span class="material-icons" aria-hidden="true">flag</span>
+        </button>
+      </div>
       <div class="biz-detail-meta" aria-label="Informacje o salonie">
         <span><span class="material-icons" style="font-size:1rem" aria-hidden="true">near_me</span><span id="bizCity">—</span></span>
         <span><span class="material-icons" style="font-size:1rem;color:#fbbf24" aria-hidden="true">star</span><span id="bizRating" aria-label="Ocena">—</span></span>
@@ -119,124 +127,65 @@ $portfolioImgs = [
           Zarezerwuj wizytę
         </button>
 
-        <button class="reclaim-trigger" id="reclaimTrigger"
-          onclick="window.openReclaimModal()"
-          aria-label="Zgłoś roszczenie do tego salonu">
-          <span class="material-icons" style="font-size:.875rem" aria-hidden="true">flag</span>
-          To mój salon — zgłoś roszczenie
-        </button>
       </div>
     </aside>
 
   </div>
 </div>
 
-<!-- RECLAIM MODAL -->
+<!-- REPORT MODAL -->
 <div class="modal-overlay hidden" id="reclaimModal"
-  role="dialog" aria-modal="true" aria-labelledby="reclaim-title">
+  onclick="if(event.target===this)window.closeReclaimModal()"
+  role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
   <div class="modal-box reclaim-modal-box">
+
     <div class="modal-header">
-      <h3 class="modal-title" id="reclaim-title">To mój salon — zgłoś roszczenie</h3>
-      <button class="modal-close" onclick="window.closeReclaimModal()"
-        aria-label="Zamknij formularz roszczenia">
+      <h3 class="modal-title" id="report-modal-title">
+        <span class="material-icons" style="font-size:1.1rem;vertical-align:-.15em;color:var(--accent)" aria-hidden="true">flag</span>
+        Zgłoś problem
+      </h3>
+      <button class="modal-close" onclick="window.closeReclaimModal()" aria-label="Zamknij">
         <span class="material-icons" aria-hidden="true">close</span>
       </button>
     </div>
 
     <div id="reclaimStep1">
-      <p class="reclaim-desc">
-        Wypełnij formularz. System automatycznie weryfikuje dane —
-        legalne zgłoszenia otrzymują bezpośredni kontakt z administracją.
-      </p>
+      <p class="reclaim-desc">Co jest nie tak z tym profilem?</p>
 
-      <div id="reclaimExistingStatus" class="reclaim-status-card hidden" role="alert"></div>
-
-      <div class="reclaim-form-body">
-        <div class="reclaim-section-label">Twoje dane</div>
-
-        <div class="auth-field">
-          <label for="reclaimName">Imię i nazwisko *</label>
-          <input id="reclaimName" type="text" class="auth-input" placeholder="Jan Kowalski"
-            autocomplete="name" required aria-required="true">
-        </div>
-        <div class="auth-field">
-          <label for="reclaimEmail">Email</label>
-          <input id="reclaimEmail" type="email" class="auth-input" readonly
-            autocomplete="email" aria-readonly="true"
-            style="opacity:.65;cursor:default">
-        </div>
-        <div class="auth-field">
-          <label for="reclaimPhone">Numer telefonu *</label>
-          <input id="reclaimPhone" type="tel" class="auth-input" placeholder="+48 600 000 000"
-            autocomplete="tel" required aria-required="true">
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div class="auth-field">
-            <label for="reclaimRole">Rola w salonie *</label>
-            <select id="reclaimRole" class="auth-input" required aria-required="true">
-              <option value="owner">Właściciel</option>
-              <option value="manager">Manager</option>
-              <option value="employee">Pracownik z upoważnieniem</option>
-              <option value="agency">Agencja / obsługa marketingowa</option>
-            </select>
-          </div>
-          <div class="auth-field">
-            <label for="reclaimAction">Co chcesz zrobić? *</label>
-            <select id="reclaimAction" class="auth-input" required aria-required="true">
-              <option value="claim_ownership">Przejąć zarządzanie profilem</option>
-              <option value="update_data">Poprawić dane salonu</option>
-              <option value="remove_listing">Zgłosić usunięcie profilu</option>
-            </select>
-          </div>
+      <div class="report-form-body">
+        <div class="report-type-grid" id="reportTypeGrid">
+          <button class="report-type-btn" data-type="wrong_data"
+            onclick="window.selectReportType('wrong_data',this)" type="button">
+            <span class="material-icons" aria-hidden="true">edit_note</span>
+            Błędne dane
+          </button>
+          <button class="report-type-btn" data-type="not_exist"
+            onclick="window.selectReportType('not_exist',this)" type="button">
+            <span class="material-icons" aria-hidden="true">storefront</span>
+            Nie istnieje
+          </button>
+          <button class="report-type-btn" data-type="spam"
+            onclick="window.selectReportType('spam',this)" type="button">
+            <span class="material-icons" aria-hidden="true">report</span>
+            Spam / fałszywy
+          </button>
+          <button class="report-type-btn" data-type="inappropriate"
+            onclick="window.selectReportType('inappropriate',this)" type="button">
+            <span class="material-icons" aria-hidden="true">block</span>
+            Nieodpowiednie
+          </button>
         </div>
 
-        <div class="reclaim-section-label">Dane firmy</div>
-
-        <div class="auth-field">
-          <label for="reclaimNip">NIP firmy *</label>
-          <div class="reclaim-input-row">
-            <input id="reclaimNip" type="text" class="auth-input"
-              placeholder="1234567890" maxlength="10" inputmode="numeric"
-              autocomplete="off" required aria-required="true"
-              aria-describedby="reclaimNipStatus"
-              oninput="window.reclaimNipCheck(this.value)">
-            <span id="reclaimNipStatus" class="reclaim-field-status" aria-live="polite"></span>
-          </div>
-        </div>
-        <div class="auth-field">
-          <label for="reclaimRegon">REGON <span class="reclaim-optional">(opcjonalnie)</span></label>
-          <input id="reclaimRegon" type="text" class="auth-input"
-            placeholder="123456789" maxlength="14" inputmode="numeric">
-        </div>
-        <div class="auth-field">
-          <label for="reclaimSocial">Strona / social media salonu <span class="reclaim-optional">(opcjonalnie)</span></label>
-          <input id="reclaimSocial" type="url" class="auth-input"
-            placeholder="https://facebook.com/twoj-salon">
-        </div>
-        <div class="auth-field">
-          <label for="reclaimDoc">Link do dokumentu KRS / CEIDG <span class="reclaim-optional">(opcjonalnie)</span></label>
-          <input id="reclaimDoc" type="url" class="auth-input"
-            placeholder="np. skan z Google Drive">
+        <div class="auth-field" style="margin-top:1rem">
+          <label for="reportMsg">Opis <span style="font-weight:400;color:var(--zinc-400)">(opcjonalnie)</span></label>
+          <textarea id="reportMsg" class="auth-input" rows="3"
+            placeholder="Opisz problem w kilku słowach…"
+            oninput="window.reclaimMsgCount(this.value)"
+            aria-describedby="reclaimMsgCounter"></textarea>
+          <span id="reclaimMsgCounter" class="reclaim-char-count" aria-live="polite"></span>
         </div>
 
-        <div class="reclaim-section-label">Opis</div>
-
-        <div class="auth-field">
-          <label for="reclaimMsg">Dlaczego ten salon należy do Ciebie? *</label>
-          <textarea id="reclaimMsg" class="auth-input" rows="4"
-            placeholder="Opisz sytuację: kiedy założyłeś/aś salon, od jak dawna go prowadzisz…"
-            required aria-required="true" aria-describedby="reclaimMsgCounter"
-            oninput="window.reclaimMsgCount(this.value)"></textarea>
-          <span id="reclaimMsgCounter" class="reclaim-char-count" aria-live="polite">0 / min. 80 znaków</span>
-        </div>
-
-        <label class="reclaim-consent">
-          <input type="checkbox" id="reclaimConsent" required aria-required="true">
-          <span>Potwierdzam, że mam prawo reprezentować ten salon, a podane dane są zgodne z prawdą.</span>
-        </label>
-
-        <!-- Honeypot — bots fill this, humans don't see it -->
+        <!-- Honeypot -->
         <input type="text" id="reclaimHp" name="website_url" autocomplete="off" tabindex="-1"
           style="position:absolute;left:-9999px;opacity:0;height:0;pointer-events:none"
           aria-hidden="true">
@@ -246,7 +195,7 @@ $portfolioImgs = [
 
       <div class="reclaim-submit-wrap">
         <button class="auth-submit" id="reclaimSubmitBtn" onclick="window.submitReclaim()">
-          <span class="material-icons" aria-hidden="true">verified_user</span> Wyślij i zweryfikuj
+          <span class="material-icons" aria-hidden="true">flag</span> Wyślij zgłoszenie
         </button>
       </div>
     </div>

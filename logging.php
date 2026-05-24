@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/functions/http.php';
+
 /**
  * Centralized logging configuration and helpers for Lumina.
  * Reads LOG_LEVEL, LOG_CHANNEL, LOG_SLACK_WEBHOOK_URL from environment.
@@ -9,8 +11,8 @@ declare(strict_types=1);
 
 define('LOG_DIR', __DIR__ . '/storage/logs');
 
-if (!is_dir(LOG_DIR)) {
-    mkdir(LOG_DIR, 0750, true);
+if (!is_dir(LOG_DIR) && !mkdir(LOG_DIR, 0750, true) && !is_dir(LOG_DIR)) {
+    error_log('Unable to create log directory: ' . LOG_DIR);
 }
 
 $logLevel = strtolower($_ENV['LOG_LEVEL'] ?? 'warning');
@@ -34,16 +36,25 @@ $levelPriority = [
     'emergency' => 7,
 ];
 
+if (!isset($levelPriority[$logLevel])) {
+    $logLevel = 'warning';
+}
+
 function lumina_log(string $level, string $message, array $context = []): void
 {
     global $logLevel, $logChannel, $slackWebhook, $levelPriority;
+
+    $level = strtolower($level);
+    if (!isset($levelPriority[$level])) {
+        $level = 'warning';
+    }
 
     if (($levelPriority[$level] ?? 0) < ($levelPriority[$logLevel] ?? 3)) {
         return;
     }
 
     $timestamp = date('Y-m-d H:i:s');
-    $contextStr = empty($context) ? '' : ' ' . json_encode($context, JSON_UNESCAPED_UNICODE);
+    $contextStr = empty($context) ? '' : ' ' . lumina_safe_json_encode($context);
     $line = "[{$timestamp}] [{$level}] {$message}{$contextStr}" . PHP_EOL;
 
     $file = match ($logChannel) {
@@ -52,7 +63,9 @@ function lumina_log(string $level, string $message, array $context = []): void
         default  => LOG_DIR . '/lumina.log',
     };
 
-    file_put_contents($file, $line, FILE_APPEND | LOCK_EX);
+    if (@file_put_contents($file, $line, FILE_APPEND | LOCK_EX) === false) {
+        error_log(trim($line));
+    }
 
     if (in_array($level, ['error', 'critical', 'alert', 'emergency'], true) && $slackWebhook) {
         lumina_notify_slack($slackWebhook, "[{$level}] {$message}", $context);
@@ -61,15 +74,19 @@ function lumina_log(string $level, string $message, array $context = []): void
 
 function lumina_notify_slack(string $webhook, string $text, array $context = []): void
 {
-    $payload = json_encode([
+    if (!function_exists('curl_init')) {
+        return;
+    }
+
+    $payload = lumina_safe_json_encode([
         'text' => '*Lumina Error* ' . $text,
         'attachments' => empty($context) ? [] : [[
             'color'  => 'danger',
-            'text'   => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            'text'   => lumina_safe_json_encode($context, JSON_PRETTY_PRINT),
             'footer' => gethostname(),
             'ts'     => time(),
         ]],
-    ], JSON_THROW_ON_ERROR);
+    ]);
 
     $ch = curl_init($webhook);
     if ($ch === false) {
@@ -86,7 +103,7 @@ function lumina_notify_slack(string $webhook, string $text, array $context = [])
     
     try {
         curl_exec($ch);
-    } catch (\Exception $e) {
+    } catch (Throwable $e) {
         // Silently fail - don't break the app if Slack notification fails
     } finally {
         curl_close($ch);

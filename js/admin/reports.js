@@ -1,5 +1,5 @@
 // admin/reports.js — Raporty i Statystyki (ApexCharts)
-import { toast } from '../modules/utils.js';
+import { getDateKeyWeekday, isRevenueStatus, waitForGlobal } from '../modules/utils.js';
 
 let _appts, _services, _staff;
 let _revenueChart  = null;
@@ -68,8 +68,7 @@ function kpiCard(icon, label, val, diff, sub) {
 }
 
 function waitForApex(cb) {
-  if (window.ApexCharts) { cb(); return; }
-  const t = setInterval(() => { if (window.ApexCharts) { clearInterval(t); cb(); } }, 100);
+  waitForGlobal(() => window.ApexCharts, cb);
 }
 
 function renderRevenueChart() {
@@ -230,7 +229,7 @@ function renderDayOfWeekChart() {
   const dowMap = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
   _appts.forEach(a => {
     if (!a.date) return;
-    const dow = new Date(a.date).getDay(); // 0=Sun ... 6=Sat
+    const dow = getDateKeyWeekday(a.date); // 0=Sun ... 6=Sat
     dowMap[dow] = (dowMap[dow] || 0) + 1;
   });
 
@@ -307,7 +306,7 @@ function getLast6Months() {
   return months;
 }
 function completedStatus(s) {
-  return ['confirmed','zakończona','completed'].includes(s);
+  return isRevenueStatus(s);
 }
 
 function countReturningClients(appts) {

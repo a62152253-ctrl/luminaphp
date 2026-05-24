@@ -1,3 +1,5 @@
+import { isRevenueStatus } from './utils.js';
+
 const DAYS_SHORT_PL = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
 
 export function renderBarChart(containerId, labels, values, options = {}) {
@@ -101,7 +103,7 @@ export function renderLineChart(containerId, labels, values, options = {}) {
 }
 
 export function revenueChartData(appointments) {
-  const confirmed = appointments.filter(a => a.status === 'confirmed');
+  const confirmed = appointments.filter(a => isRevenueStatus(a.status));
   const now = new Date();
   const months = Array.from({length: 6}, (_, i) => {
     const m = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);

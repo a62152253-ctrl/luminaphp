@@ -4,7 +4,7 @@ import {
   confirmBooking, setServices, setStaff
 } from '../modules/booking-mgr.js';
 import { toggleFavorite, loadFavoriteIds, isFavorite } from '../modules/favorites.js';
-import { toast } from '../modules/utils.js';
+import { toast, onAppReady } from '../modules/utils.js';
 import { initReclaim } from '../modules/reclaim-mgr.js';
 import { db, collection, query, where, orderBy, getDocs, addDoc, serverTimestamp }
   from '../firebase-config.js';
@@ -111,9 +111,7 @@ async function initFavButton(bizId) {
   if (window.App?._ready) {
     await tryLoad();
   } else {
-    const poll = setInterval(() => {
-      if (window.App?._ready) { clearInterval(poll); tryLoad(); }
-    }, 100);
+    onAppReady(() => { void tryLoad(); });
   }
 
   btn.onclick = async () => {
@@ -339,9 +337,7 @@ function renderReviewForm(bizId) {
     renderWhenReady();
   } else {
     el.innerHTML = '';
-    const poll = setInterval(() => {
-      if (window.App?._ready) { clearInterval(poll); renderWhenReady(); }
-    }, 100);
+    onAppReady(renderWhenReady);
   }
 }
 

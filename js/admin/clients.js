@@ -1,7 +1,13 @@
 // admin/clients.js — CRM Klientów
 import { db, collection, getDocs, addDoc, updateDoc, doc, query, where }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
+import {
+  appointmentStatusLabel,
+  compareAppointmentsDesc,
+  isRevenueStatus,
+  statusBadgeClass,
+  toast,
+} from '../modules/utils.js';
 
 let _bizId, _appts;
 let _clients       = [];
@@ -36,7 +42,7 @@ async function loadClients() {
       };
     }
     map[key].appts.push(a);
-    if (['confirmed','zakończona','completed'].includes(a.status)) {
+    if (isRevenueStatus(a.status)) {
       map[key].spent += Number(a.price) || 0;
     }
   });
@@ -89,7 +95,7 @@ function renderClientList(clients) {
 
 function clientRow(c) {
   const tagHtml    = c.tags.map(t => `<span class="client-tag client-tag-${t}">${tagLabel(t)}</span>`).join('');
-  const lastAppt   = [...c.appts].sort((a,b) => b.date > a.date ? 1 : -1)[0];
+  const lastAppt   = [...c.appts].sort(compareAppointmentsDesc)[0];
   const bdayIcon   = isBirthdayThisMonth(c.birthday) ? ' <span class="material-icons" style="font-size:.875rem;color:#f59e0b;vertical-align:middle" title="Urodziny w tym miesiącu">cake</span>' : '';
   return `<div class="client-row ${_selected?.key === c.key ? 'active' : ''}"
     onclick="clientSelectRow('${esc(c.key)}')">
@@ -116,9 +122,9 @@ function renderClientDetail(c) {
   const el = document.getElementById('clientDetail');
   if (!el) return;
 
-  const completed = c.appts.filter(a => ['confirmed','zakończona','completed'].includes(a.status));
+  const completed = c.appts.filter(a => isRevenueStatus(a.status));
   const avgGap    = calcAvgGap(c.appts);
-  const sorted    = [...c.appts].sort((a,b) => b.date > a.date ? 1 : -1);
+  const sorted    = [...c.appts].sort(compareAppointmentsDesc);
 
   el.innerHTML = `
     <div class="client-detail-header">
@@ -200,7 +206,7 @@ function renderClientDetail(c) {
           <div class="client-hist-date">${formatDate(a.date)} ${a.time||''}</div>
           <div class="client-hist-svc">${esc(a.serviceName||a.service||'—')}</div>
           <div class="client-hist-price">${a.price ? a.price+' zł' : ''}</div>
-          <span class="biz-status-badge ${statusColor(a.status)}">${statusLabel(a.status)}</span>
+          <span class="biz-status-badge ${statusBadgeClass(a.status)}">${appointmentStatusLabel(a.status)}</span>
         </div>`).join('')}
     </div>`;
 }
@@ -339,18 +345,4 @@ function formatDate(d) {
   const [y, m, day] = d.split('-');
   return `${day}.${m}.${y}`;
 }
-const esc = s => String(s ?? '').replace(/</g, '&lt;');
-function statusColor(s) {
-  const m = { pending:'badge-pending', zaplanowana:'badge-planned', potwierdzona:'badge-confirmed',
-    confirmed:'badge-confirmed', 'w trakcie':'badge-inprogress', zakończona:'badge-done',
-    completed:'badge-done', cancelled:'badge-cancelled', anulowana:'badge-cancelled',
-    'nie przyszedł':'badge-noshow' };
-  return m[s] || 'badge-pending';
-}
-function statusLabel(s) {
-  const m = { pending:'Oczekująca', zaplanowana:'Zaplanowana', potwierdzona:'Potwierdzona',
-    confirmed:'Potwierdzona', 'w trakcie':'W trakcie', zakończona:'Zakończona',
-    completed:'Zakończona', cancelled:'Anulowana', anulowana:'Anulowana',
-    'nie przyszedł':'Nie przyszedł' };
-  return m[s] || s || '—';
-}
+const esc = s => String(s ?? '').replace(/</g, '&lt;').replace(/'/g, "\\'");

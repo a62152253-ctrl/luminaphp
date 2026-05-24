@@ -1,7 +1,7 @@
 // admin/calendar.js — Kalendarz (timeline Google Calendar style)
 import { db, collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, serverTimestamp, onSnapshot }
   from '../firebase-config.js';
-import { toast, confirmAction } from '../modules/utils.js';
+import { appointmentStatusLabel, confirmAction, formatDateKey, isCancelledStatus, toast, waitForGlobal } from '../modules/utils.js';
 
 const SLOT_H   = 64;   // px per 30-min slot
 const START_H  = 8;    // 08:00
@@ -114,7 +114,7 @@ function updateDateLabel() {
 }
 
 function dayStr(d) {
-  return d.toISOString().slice(0, 10);
+  return formatDateKey(d);
 }
 
 function weekStart(d) {
@@ -310,11 +310,7 @@ let _fpDate = null;
 let _fpTime = null;
 
 function initFlatpickr() {
-  const waitFp = (cb) => {
-    if (window.flatpickr) { cb(); return; }
-    const t = setInterval(() => { if (window.flatpickr) { clearInterval(t); cb(); } }, 100);
-  };
-  waitFp(() => {
+  waitForGlobal(() => window.flatpickr, () => {
     const locale = window.flatpickr?.l10ns?.pl || {};
     const dateEl = document.getElementById('calApptDate');
     const timeEl = document.getElementById('calApptTime');
@@ -465,7 +461,7 @@ function openStatusModal(id) {
   if (!modal) return;
   document.getElementById('calStatusApptId').value = id;
   const appt = _appts.find(a => a.id === id);
-  document.getElementById('calStatusCurrent').textContent = appt ? statusLabel(appt.status) : '';
+  document.getElementById('calStatusCurrent').textContent = appt ? appointmentStatusLabel(appt.status) : '';
   modal.classList.remove('hidden');
 }
 
@@ -495,7 +491,7 @@ async function hasConflict(staffId, date, time, duration, excludeId = null) {
   return snap.docs.some(d => {
     if (excludeId && d.id === excludeId) return false;
     const a = d.data();
-    if (['cancelled', 'anulowana'].includes(a.status)) return false;
+    if (isCancelledStatus(a.status)) return false;
     const aStart = timeToMin(a.time || '00:00');
     const aEnd   = aStart + (Number(a.duration) || 60);
     return newStart < aEnd && aStart < newEnd;
@@ -530,11 +526,8 @@ function minutesToTime(min) {
   const m = min % 60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
-const esc = s => String(s ?? '').replaceAll('<', '&lt;');
-function statusLabel(s) {
-  const m = { pending:'Oczekująca', zaplanowana:'Zaplanowana', potwierdzona:'Potwierdzona',
-    confirmed:'Potwierdzona', 'w trakcie':'W trakcie', zakończona:'Zakończona',
-    completed:'Zakończona', cancelled:'Anulowana', anulowana:'Anulowana',
-    'nie przyszedł':'Nie przyszedł' };
-  return m[s] || s || '—';
+function timeToMin(t) {
+  const [h, m] = String(t || '0:0').split(':').map(Number);
+  return h * 60 + m;
 }
+const esc = s => String(s ?? '').replace(/</g, '&lt;').replace(/'/g, "\\'");

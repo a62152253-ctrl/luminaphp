@@ -1,5 +1,10 @@
 export function escHtml(str) {
-  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export function formatCurrency(amount) {
@@ -41,14 +46,25 @@ export function confirmAction(message, onConfirm, onCancel = null) {
       </div>
     </div>`;
 
-  const close = () => overlay.remove();
+  let cleaned = false;
+  let escHandler = null;
+
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    if (escHandler) document.removeEventListener('keydown', escHandler);
+  };
+
+  const close = () => {
+    cleanup();
+    overlay.remove();
+  };
   const cancel = () => { close(); onCancel?.(); };
   overlay.querySelector('.confirm-cancel').addEventListener('click', cancel);
   overlay.querySelector('.confirm-ok').addEventListener('click', () => { close(); onConfirm(); });
   overlay.addEventListener('click', e => { if (e.target === overlay) cancel(); });
-  document.addEventListener('keydown', function esc(e) {
-    if (e.key === 'Escape') { document.removeEventListener('keydown', esc); cancel(); }
-  });
+  escHandler = e => { if (e.key === 'Escape') cancel(); };
+  document.addEventListener('keydown', escHandler);
   document.body.appendChild(overlay);
   overlay.querySelector('.confirm-ok').focus();
 }
@@ -56,6 +72,182 @@ export function confirmAction(message, onConfirm, onCancel = null) {
 export function debounce(fn, ms) {
   let t;
   return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+export function onAppReady(callback, { timeoutMs = 0 } = {}) {
+  if (window.App?._ready) {
+    callback();
+    return () => {};
+  }
+
+  let done = false;
+  let timeoutId = null;
+
+  const cleanup = () => {
+    if (done) return;
+    done = true;
+    window.removeEventListener('app:ready', run);
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+
+  const run = () => {
+    if (done) return;
+    cleanup();
+    callback();
+  };
+
+  window.addEventListener('app:ready', run, { once: true });
+  if (timeoutMs > 0) {
+    timeoutId = setTimeout(run, timeoutMs);
+  }
+
+  return cleanup;
+}
+
+export function waitForGlobal(getter, callback, { intervalMs = 100, timeoutMs = 0 } = {}) {
+  const resolve = typeof getter === 'function'
+    ? getter
+    : () => window[getter];
+
+  const initial = resolve();
+  if (initial) {
+    callback(initial);
+    return () => {};
+  }
+
+  let stopped = false;
+  let timeoutId = null;
+
+  const cleanup = () => {
+    if (stopped) return;
+    stopped = true;
+    clearInterval(intervalId);
+    if (timeoutId) clearTimeout(timeoutId);
+  };
+
+  const intervalId = setInterval(() => {
+    const value = resolve();
+    if (!value) return;
+    cleanup();
+    callback(value);
+  }, intervalMs);
+
+  if (timeoutMs > 0) {
+    timeoutId = setTimeout(cleanup, timeoutMs);
+  }
+
+  return cleanup;
+}
+
+const APPOINTMENT_STATUS_LABELS = {
+  pending: 'Oczekuj\u0105ca',
+  zaplanowana: 'Zaplanowana',
+  potwierdzona: 'Potwierdzona',
+  confirmed: 'Potwierdzona',
+  'w trakcie': 'W trakcie',
+  zako\u0144czona: 'Zako\u0144czona',
+  completed: 'Zako\u0144czona',
+  cancelled: 'Anulowana',
+  anulowana: 'Anulowana',
+  'nie przyszed\u0142': 'Nie przyszed\u0142',
+};
+
+const APPOINTMENT_CANCELLED = new Set(['cancelled', 'anulowana']);
+const APPOINTMENT_REVENUE = new Set(['confirmed', 'potwierdzona', 'completed', 'zako\u0144czona']);
+const APPOINTMENT_BADGE_CLASSES = {
+  pending: 'badge-pending',
+  zaplanowana: 'badge-planned',
+  potwierdzona: 'badge-confirmed',
+  confirmed: 'badge-confirmed',
+  'w trakcie': 'badge-inprogress',
+  zako\u0144czona: 'badge-done',
+  completed: 'badge-done',
+  cancelled: 'badge-cancelled',
+  anulowana: 'badge-cancelled',
+  'nie przyszed\u0142': 'badge-noshow',
+};
+const APPOINTMENT_DOT_COLORS = {
+  zaplanowana: '#6366f1',
+  pending: '#6366f1',
+  potwierdzona: '#22c55e',
+  confirmed: '#22c55e',
+  'w trakcie': '#f59e0b',
+  zako\u0144czona: '#94a3b8',
+  completed: '#94a3b8',
+  'nie przyszed\u0142': '#ef4444',
+  anulowana: '#cbd5e1',
+  cancelled: '#cbd5e1',
+};
+
+function padDatePart(value) {
+  return String(value).padStart(2, '0');
+}
+
+function normalizeAppointmentStatus(status) {
+  return String(status ?? '').trim().toLowerCase();
+}
+
+export function formatDateKey(date = new Date()) {
+  return [
+    date.getFullYear(),
+    padDatePart(date.getMonth() + 1),
+    padDatePart(date.getDate()),
+  ].join('-');
+}
+
+export function shiftDateKey(days, baseDate = new Date()) {
+  const next = new Date(baseDate);
+  next.setDate(next.getDate() + days);
+  return formatDateKey(next);
+}
+
+export function parseDateKey(dateStr, timeStr = '00:00') {
+  if (!dateStr) return null;
+  const [y, m, d] = String(dateStr).split('-').map(Number);
+  const [hh, mm] = String(timeStr || '00:00').split(':').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d, Number.isFinite(hh) ? hh : 0, Number.isFinite(mm) ? mm : 0, 0, 0);
+}
+
+export function getDateTimeValue(dateStr, timeStr = '00:00') {
+  return parseDateKey(dateStr, timeStr)?.getTime() ?? 0;
+}
+
+export function getDateKeyWeekday(dateStr) {
+  return parseDateKey(dateStr)?.getDay() ?? 0;
+}
+
+export function appointmentTimestamp(appt) {
+  return getDateTimeValue(appt?.date, appt?.time);
+}
+
+export function compareAppointmentsAsc(a, b) {
+  return appointmentTimestamp(a) - appointmentTimestamp(b);
+}
+
+export function compareAppointmentsDesc(a, b) {
+  return appointmentTimestamp(b) - appointmentTimestamp(a);
+}
+
+export function isCancelledStatus(status) {
+  return APPOINTMENT_CANCELLED.has(normalizeAppointmentStatus(status));
+}
+
+export function isRevenueStatus(status) {
+  return APPOINTMENT_REVENUE.has(normalizeAppointmentStatus(status));
+}
+
+export function appointmentStatusLabel(status) {
+  const key = normalizeAppointmentStatus(status);
+  return APPOINTMENT_STATUS_LABELS[key] || status || 'â€”';
+}
+
+export function statusBadgeClass(status) {
+  return APPOINTMENT_BADGE_CLASSES[normalizeAppointmentStatus(status)] || 'badge-pending';
+}
+
+export function statusDotColor(status) {
+  return APPOINTMENT_DOT_COLORS[normalizeAppointmentStatus(status)] || '#6366f1';
 }
 
 export function formatTimestamp(ts) {
@@ -67,22 +259,13 @@ export function formatTimestamp(ts) {
 export function formatDatePl(dateStr) {
   if (!dateStr) return '';
   const safe = String(dateStr).includes('T') ? dateStr : dateStr + 'T12:00:00';
-  return new Intl.DateTimeFormat('pl', { day:'2-digit', month:'long', year:'numeric' }).format(new Date(safe));
+  const date = new Date(safe);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pl', { day:'2-digit', month:'long', year:'numeric' }).format(date);
 }
 
 export function statusLabel(s) {
-  return {
-    pending:         'Oczekująca',
-    zaplanowana:     'Zaplanowana',
-    potwierdzona:    'Potwierdzona',
-    confirmed:       'Potwierdzona',
-    'w trakcie':     'W trakcie',
-    zakończona:      'Zakończona',
-    completed:       'Zakończona',
-    cancelled:       'Anulowana',
-    anulowana:       'Anulowana',
-    'nie przyszedł': 'Nie przyszedł',
-  }[s] || s || '—';
+  return appointmentStatusLabel(s);
 }
 
 export function getCurrentPage() {
@@ -116,14 +299,23 @@ export function copyToClipboard(text) {
   if (navigator.clipboard) {
     return navigator.clipboard.writeText(text).then(() => true).catch(() => false);
   }
-  const el = document.createElement('textarea');
-  el.value = text;
-  el.style.cssText = 'position:fixed;opacity:0';
-  document.body.appendChild(el);
-  el.select();
-  const ok = document.execCommand('copy');
-  el.remove();
-  return Promise.resolve(ok);
+  try {
+    const active = document.activeElement;
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', 'readonly');
+    el.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    el.setSelectionRange(0, el.value.length);
+    const ok = document.execCommand('copy');
+    el.remove();
+    active?.focus?.();
+    return Promise.resolve(ok);
+  } catch {
+    return Promise.resolve(false);
+  }
 }
 
 export function formatPhone(phone) {
@@ -135,8 +327,10 @@ export function formatPhone(phone) {
 
 export function pluralize(n, one, few, many) {
   const abs = Math.abs(n);
+  const mod10 = abs % 10;
+  const mod100 = abs % 100;
   if (abs === 1) return `${n} ${one}`;
-  if (abs >= 2 && abs <= 4) return `${n} ${few}`;
+  if (mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14)) return `${n} ${few}`;
   return `${n} ${many}`;
 }
 

@@ -1,3 +1,5 @@
+import { formatDateKey, isRevenueStatus } from './utils.js';
+
 const QUEUE_KEY = 'lumina_analytics_queue';
 const FLUSH_INTERVAL = 30000;
 
@@ -56,7 +58,7 @@ export async function getOwnerStats(businessId) {
   const { db, collection, query, where, getDocs } = await import('../firebase-config.js');
   const appts = await getDocs(query(collection(db, 'appointments'), where('businessId', '==', businessId)));
   const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  const today = formatDateKey(now);
   const month = today.slice(0, 7);
 
   let dailyRevenue = 0, monthlyRevenue = 0, bookings = 0, conversions = 0;
@@ -67,7 +69,7 @@ export async function getOwnerStats(businessId) {
     const price = a.price || a.total || 0;
     if (a.date === today) dailyRevenue += price;
     if ((a.date || '').startsWith(month)) monthlyRevenue += price;
-    if (a.status === 'confirmed' || a.status === 'zakończona') conversions++;
+    if (isRevenueStatus(a.status)) conversions++;
   });
 
   return {
