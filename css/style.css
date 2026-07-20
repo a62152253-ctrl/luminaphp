@@ -2590,3 +2590,304 @@ footer {
   }
   .cookie-prefs-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== BEAUTY SOS ===== */
+
+/* Banner wrapper — sits below category chips in explore header */
+.sos-banner-wrap {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Main SOS button */
+.sos-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.75rem 1rem 1.5rem;
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 60%, #ef4444 100%);
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--font-display, inherit);
+  box-shadow: 0 0 0 0 rgba(220,38,38,.4), 0 8px 32px rgba(185,28,28,.45);
+  transition: transform .15s ease, box-shadow .15s ease;
+  overflow: visible;
+  min-width: 18rem;
+  max-width: 480px;
+}
+.sos-btn:hover  { transform: translateY(-2px) scale(1.015); box-shadow: 0 0 0 4px rgba(220,38,38,.25), 0 12px 40px rgba(185,28,28,.55); }
+.sos-btn:active { transform: scale(.98); }
+
+/* Concentric pulse rings */
+.sos-pulse-ring {
+  position: absolute;
+  left: 1.5rem;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: .75rem;
+  height: .75rem;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.7);
+  animation: sos-ring 1.8s ease-out infinite;
+  pointer-events: none;
+}
+.sos-pulse-ring--2 { animation-delay: .6s; }
+
+@keyframes sos-ring {
+  0%   { transform: translate(-50%,-50%) scale(1); opacity: .8; }
+  100% { transform: translate(-50%,-50%) scale(3.5); opacity: 0; }
+}
+
+/* Solid center dot */
+.sos-btn-dot {
+  flex-shrink: 0;
+  width: .75rem;
+  height: .75rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255,255,255,.8);
+}
+
+/* Text block */
+.sos-btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+.sos-btn-text strong {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.sos-btn-text small {
+  font-size: .75rem;
+  font-weight: 500;
+  opacity: .85;
+  white-space: nowrap;
+}
+
+/* Arrow icon */
+.sos-btn-arrow {
+  font-size: 1.375rem;
+  opacity: .9;
+  transition: transform .2s ease;
+}
+.sos-btn:hover .sos-btn-arrow { transform: translateX(3px); }
+
+/* Loading state */
+.sos-btn.sos-loading .sos-btn-dot,
+.sos-btn.sos-loading .sos-pulse-ring { display: none; }
+.sos-btn.sos-loading::before {
+  content: '';
+  width: .875rem;
+  height: .875rem;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: sos-spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes sos-spin { to { transform: rotate(360deg); } }
+
+/* ── Modal overlay ── */
+.sos-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9900;
+  background: rgba(0,0,0,.65);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  animation: sos-fade-in .2s ease;
+}
+.sos-modal.hidden { display: none; }
+
+@keyframes sos-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal panel */
+.sos-modal-inner {
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  background: var(--surface, #fff);
+  border-radius: 1.5rem 1.5rem 1rem 1rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: sos-slide-up .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 24px 80px rgba(0,0,0,.3);
+}
+
+@keyframes sos-slide-up {
+  from { transform: translateY(2.5rem); opacity: 0; }
+  to   { transform: translateY(0);      opacity: 1; }
+}
+
+/* Modal header */
+.sos-modal-head {
+  background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+  padding: 1.25rem 1.5rem 1rem;
+  position: relative;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sos-modal-title-row {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-bottom: .25rem;
+}
+.sos-modal-title-row h2 {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin: 0;
+  color: #fff;
+}
+
+/* Live pulsing dot in modal header */
+.sos-live-dot {
+  width: .625rem;
+  height: .625rem;
+  background: #fff;
+  border-radius: 50%;
+  animation: sos-live-pulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes sos-live-pulse {
+  0%, 100% { opacity: 1;  transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.6); }
+}
+
+.sos-modal-sub {
+  font-size: .875rem;
+  opacity: .9;
+  margin: 0;
+}
+.sos-modal-sub strong { font-weight: 700; }
+
+.sos-modal-close {
+  position: absolute;
+  top: .875rem;
+  right: 1rem;
+  background: rgba(255,255,255,.15);
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: background .15s;
+}
+.sos-modal-close:hover { background: rgba(255,255,255,.3); }
+.sos-modal-close .material-icons { font-size: 1.125rem; }
+
+/* Salon list */
+.sos-modal-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: .5rem 0;
+}
+
+/* Salon card row */
+.sos-salon-card {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding: .75rem 1.25rem;
+  cursor: pointer;
+  transition: background .15s;
+  border-bottom: 1px solid var(--border, #f1f5f9);
+}
+.sos-salon-card:last-child { border-bottom: none; }
+.sos-salon-card:hover { background: var(--surface-hover, #f8fafc); }
+
+.sos-card-img {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: .75rem;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sos-card-info { flex: 1; min-width: 0; }
+.sos-card-cat  { font-size: .6875rem; font-weight: 600; text-transform: uppercase; color: #dc2626; letter-spacing: .06em; }
+.sos-card-name { font-size: .9375rem; font-weight: 700; color: var(--text-primary, #0f172a); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sos-card-meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .75rem;
+  color: var(--zinc-500, #71717a);
+  margin-top: .125rem;
+}
+.sos-card-dist  { display: flex; align-items: center; gap: .125rem; }
+.sos-card-dist .material-icons { font-size: .875rem; color: var(--accent, #6366f1); }
+.sos-card-rating { display: flex; align-items: center; gap: .125rem; font-weight: 600; color: #f59e0b; }
+.sos-card-rating .material-icons { font-size: .875rem; }
+
+/* Book button */
+.sos-book-btn {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .5rem .875rem;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  font-size: .8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, transform .1s;
+  flex-shrink: 0;
+}
+.sos-book-btn:hover  { background: #b91c1c; }
+.sos-book-btn:active { transform: scale(.96); }
+.sos-book-btn .material-icons { font-size: 1rem; }
+
+/* Empty state */
+.sos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: var(--zinc-500, #71717a);
+}
+.sos-empty .material-icons { font-size: 3rem; opacity: .4; }
+.sos-empty p { margin: 0; font-size: .9375rem; font-weight: 600; }
+.sos-empty-sub { font-size: .8125rem !important; font-weight: 400 !important; opacity: .8; }
+
+/* Dark mode */
+[data-theme="dark"] .sos-modal-inner { background: #1c2128; }
+[data-theme="dark"] .sos-salon-card:hover { background: #21262d; }
+[data-theme="dark"] .sos-salon-card { border-color: #30363d; }
+[data-theme="dark"] .sos-card-name { color: #e2e8f0; }
+
+/* Mobile */
+@media (max-width: 540px) {
+  .sos-modal { padding: 0; align-items: flex-end; }
+  .sos-modal-inner { border-radius: 1.5rem 1.5rem 0 0; max-height: 85vh; }
+  .sos-btn { min-width: unset; width: 100%; border-radius: 1rem; }
+  .sos-btn-text small { display: none; }
+}

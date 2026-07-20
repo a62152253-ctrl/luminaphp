@@ -12,8 +12,10 @@
       <button id="copyReferralLink" class="btn btn-accent"><span class="material-icons">content_copy</span> Kopiuj</button>
     </div>
     <div id="referralQR" class="referral-qr"></div>
-    <div class="referral-share">
+    <div class="referral-share" style="display:flex;gap:.75rem;flex-wrap:wrap">
       <button id="shareReferral" class="btn btn-ghost"><span class="material-icons">share</span> Udostępnij</button>
+      <button id="emailReferral" class="btn btn-ghost"><span class="material-icons">email</span> Wyślij e-mail</button>
+      <button id="smsReferral" class="btn btn-ghost"><span class="material-icons">sms</span> Wyślij SMS</button>
     </div>
   </section>
 
@@ -33,3 +35,5 @@
     <button id="claimReferralBonus" class="btn btn-accent hidden">Odbierz bonus</button>
   </section>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

@@ -91,6 +91,11 @@
             <button type="button" class="dashboard-action-btn" data-action="export"><span class="material-icons">download</span><span>CSV</span></button>
             <button type="button" class="dashboard-action-btn" data-action="profile"><span class="material-icons">person</span><span>Profil</span></button>
           </div>
+          <div class="dashboard-hero-secondary" style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap">
+            <button type="button" class="btn btn-ghost btn-sm">Sortuj listę</button>
+            <button type="button" class="btn btn-ghost btn-sm">Wyczyść dane</button>
+            <button type="button" class="btn btn-accent btn-sm">Szybkie rezerwacje</button>
+          </div>
         </div>
         <div class="dashboard-next-card" id="nextVisitCard">
           <div class="dashboard-next-card-head">
@@ -476,3 +481,5 @@
   </div>
 
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

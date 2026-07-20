@@ -36,6 +36,9 @@ $bizId ??= '';
       <option value="4">4+ gwiazdki</option>
       <option value="3">3+ gwiazdki</option>
     </select>
+    <button id="reviewHighlightBtn" class="btn btn-ghost btn-sm" type="button">
+      <span class="material-icons">highlight</span> Najlepsze opinie
+    </button>
 
     <label for="reviewFilterSort" class="sr-only">Sortuj opinie</label>
     <select id="reviewFilterSort" class="auth-input" aria-label="Sortuj opinie">
@@ -128,3 +131,5 @@ $bizId ??= '';
 </div>
 
 <input type="hidden" id="reviewsBizId" value="<?= htmlspecialchars($bizId, ENT_QUOTES, 'UTF-8') ?>">
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

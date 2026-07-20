@@ -238,6 +238,10 @@ RewriteRule ^tmp/.*\.(php|phtml|phar|php[0-9])$ - [F,L]
     Require all granted
 </Files>
 
+<Files "superadmin-auth.php">
+    Require all granted
+</Files>
+
 # ---------------------------------------------------------
 # Prevent Access to Hidden Files
 # ---------------------------------------------------------

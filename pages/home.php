@@ -52,6 +52,17 @@ $trendingServices = [
       </div>
     </div>
 
+    <div class="booksy-hero-actions" role="group" aria-label="Szybkie akcje">
+      <a href="/luminaphp/?page=explore" class="btn btn-accent btn-lg">
+        <span class="material-icons" aria-hidden="true">travel_explore</span>
+        Zobacz top salonów
+      </a>
+      <a href="/luminaphp/?page=map" class="btn btn-ghost btn-lg">
+        <span class="material-icons" aria-hidden="true">map</span>
+        Otwórz mapę
+      </a>
+    </div>
+
     <div class="booksy-quick-stats" aria-label="Statystyki platformy">
       <div class="booksy-stat"><span class="booksy-stat-number">12k+</span><span class="booksy-stat-label">Salonów</span></div>
       <div class="booksy-stat"><span class="booksy-stat-number">500k+</span><span class="booksy-stat-label">Wizyt miesięcznie</span></div>
@@ -235,3 +246,5 @@ $trendingServices = [
   <span class="material-icons">add</span>
   <span class="fab-label">Zarezerwuj</span>
 </a>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

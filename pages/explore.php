@@ -38,9 +38,34 @@ $exploreCats = ['Barber','Paznokcie','Fryzjer','Masaż','Kosmetyczka','Brwi i Rz
       <button type="button" class="market-cat-chip" data-cat="<?= $catEsc ?>"><?= $catEsc ?></button>
       <?php endforeach; ?>
     </div>
-
+    <div class="explore-quick-actions" role="group" aria-label="Szybkie akcje eksploracji" style="margin:1rem 0;display:flex;gap:.75rem;flex-wrap:wrap">
+      <button type="button" class="btn btn-ghost btn-sm">Sortuj według oceny</button>
+      <button type="button" class="btn btn-ghost btn-sm">Filtrowanie cenowe</button>
+      <button type="button" class="btn btn-accent btn-sm">Najbliższe salony</button>
+    </div>
+ 
     <div id="recentSearches" class="market-recent hidden" aria-live="polite"></div>
+
+    <!-- Beauty SOS -->
+    <div class="sos-banner-wrap">
+      <button id="beautySosBtn" class="sos-btn" aria-label="Beauty SOS – znajdź salon otwarty teraz">
+        <span class="sos-pulse-ring" aria-hidden="true"></span>
+        <span class="sos-pulse-ring sos-pulse-ring--2" aria-hidden="true"></span>
+        <span class="sos-btn-dot" aria-hidden="true"></span>
+        <span class="sos-btn-text">
+          <strong>Beauty SOS</strong>
+          <small>Znajdź wolne miejsce w 2h — teraz</small>
+        </span>
+        <span class="material-icons sos-btn-arrow" aria-hidden="true">chevron_right</span>
+      </button>
+    </div>
   </div>
+</div>
+
+<!-- Beauty SOS Modal -->
+<div id="sosModal" class="sos-modal hidden"
+  role="dialog" aria-modal="true" aria-labelledby="sosModalTitle"
+  onclick="if(event.target===this)this.classList.add('hidden')">
 </div>
 
 <!-- EXPLORE BODY -->
@@ -252,3 +277,5 @@ $exploreCats = ['Barber','Paznokcie','Fryzjer','Masaż','Kosmetyczka','Brwi i Rz
     <div class="compare-modal-body" id="compareModalBody"></div>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

@@ -59,6 +59,12 @@ $bizId ??= '';
           <option value="active">Aktywni</option>
           <option value="inactive">Nieaktywni</option>
         </select>
+        <label for="employeeSort" class="sr-only">Sortuj pracowników</label>
+        <select class="filter-select" id="employeeSort" aria-label="Sortuj pracowników">
+          <option value="recent">Najnowsi</option>
+          <option value="rating">Ocena</option>
+          <option value="bookings">Liczba wizyt</option>
+        </select>
       </div>
 
       <div id="employeesContainer" class="employees-container" aria-live="polite">
@@ -209,3 +215,5 @@ function showEmployeeDetails(employeeId) {
   window.employeesPage.selectedEmployee = employeeId;
 }
 </script>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

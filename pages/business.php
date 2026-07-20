@@ -36,6 +36,14 @@ $portfolioImgs = [
         <span><span class="material-icons" style="font-size:1rem" aria-hidden="true">schedule</span><span id="bizHoursText">—</span></span>
         <span id="bizOpenBadge" class="biz-status-badge" style="display:none"></span>
       </div>
+      <div class="biz-detail-actions" role="group" aria-label="Szybkie akcje profilu">
+        <a href="/luminaphp/?page=booking&amp;id=<?= htmlspecialchars($bizId, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-accent btn-sm">
+          <span class="material-icons" aria-hidden="true">event_available</span> Rezerwuj teraz
+        </a>
+        <a href="/luminaphp/?page=offers" class="btn btn-ghost btn-sm">
+          <span class="material-icons" aria-hidden="true">local_offer</span> Sprawdź promocje
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -204,3 +212,5 @@ $portfolioImgs = [
     <div id="reclaimStep2" class="hidden" aria-live="polite"></div>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

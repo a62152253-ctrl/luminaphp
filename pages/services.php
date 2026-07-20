@@ -56,6 +56,13 @@ $bizId ??= '';
         <input type="search" class="search-input" id="serviceSearch"
           placeholder="Szukaj usługi..." autocomplete="off"
           aria-label="Szukaj usługi">
+        <label for="serviceSort" class="sr-only">Sortuj usługi</label>
+        <select class="filter-select" id="serviceSort" aria-label="Sortuj usługi">
+          <option value="recommended">Polecane</option>
+          <option value="price_asc">Cena rosnąco</option>
+          <option value="price_desc">Cena malejąco</option>
+          <option value="duration">Czas trwania</option>
+        </select>
         <div class="view-toggle" role="group" aria-label="Widok listy">
           <button class="view-btn active" data-view="grid"
             aria-pressed="true" aria-label="Widok siatki">
@@ -181,3 +188,5 @@ function saveService() {
   return true;
 }
 </script>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

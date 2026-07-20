@@ -12,6 +12,9 @@
       <button id="loyaltyShareBtn" class="btn btn-ghost btn-sm">
         <span class="material-icons">share</span> Udostępnij
       </button>
+      <button id="loyaltyRedeemBtn" class="btn btn-accent btn-sm">
+        <span class="material-icons">redeem</span> Wymień punkty
+      </button>
       <button id="loyaltyExportBtn" class="btn btn-ghost btn-sm">
         <span class="material-icons">download</span> Eksportuj historię
       </button>
@@ -112,3 +115,5 @@
     <div id="loyaltyHistory" class="loyalty-history"></div>
   </section>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

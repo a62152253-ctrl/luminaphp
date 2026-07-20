@@ -52,6 +52,11 @@
           <p>Przed publikacją sprawdzamy kompletność najważniejszych danych.</p>
         </div>
       </div>
+      <div class="setup-quick-actions" role="group" aria-label="Szybkie akcje ustawień" style="margin-top:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap">
+        <button type="button" class="btn btn-ghost btn-sm">Wyczyść formularz</button>
+        <button type="button" class="btn btn-ghost btn-sm">Zobacz podgląd</button>
+        <button type="button" class="btn btn-accent btn-sm">Pobierz checklistę</button>
+      </div>
     </div>
 
     <!-- Error banner -->
@@ -327,3 +332,5 @@ function setupBack(current) {
   setupGoTo(current - 1);
 }
 </script>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

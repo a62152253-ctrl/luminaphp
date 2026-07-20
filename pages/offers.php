@@ -3,6 +3,11 @@
   <header class="features-hero lumina-page-head">
     <h1>Promocje i pakiety</h1>
     <p>Kody rabatowe i oferty specjalne salonów</p>
+    <div class="offers-header-actions" role="group" aria-label="Szybkie akcje ofert" style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap">
+      <button type="button" class="btn btn-ghost btn-sm">Sortuj według rabatu</button>
+      <button type="button" class="btn btn-ghost btn-sm">Tylko promocje</button>
+      <button type="button" class="btn btn-accent btn-sm">Zapisz ofertę</button>
+    </div>
   </header>
 
   <!-- Kod rabatowy -->
@@ -169,3 +174,5 @@
     </div>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

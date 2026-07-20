@@ -44,6 +44,9 @@ $mapCategories = ['Barber','Fryzjer','Paznokcie','Kosmetyczka','Masaż','Brwi i 
       <button id="mapHeatToggle" class="btn btn-ghost btn-block" style="margin-top:.5rem" aria-pressed="false">
         <span class="material-icons" aria-hidden="true">whatshot</span> Mapa gęstości
       </button>
+      <button id="mapToggleList" class="btn btn-ghost btn-block" style="margin-top:.5rem" aria-pressed="false">
+        <span class="material-icons" aria-hidden="true">view_list</span> Lista salonów
+      </button>
     </div>
 
     <div id="mapSidebarList" class="map-sidebar-list" aria-live="polite" aria-label="Lista salonów"></div>
@@ -54,3 +57,5 @@ $mapCategories = ['Barber','Fryzjer','Paznokcie','Kosmetyczka','Masaż','Brwi i 
 </div>
 
 <!-- Leaflet, MarkerCluster, and Heat are loaded by index.php in <head> via lumina_head_scripts() -->
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

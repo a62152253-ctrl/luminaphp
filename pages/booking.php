@@ -28,6 +28,18 @@ $step = max(1, min(4, (int)($_GET['step'] ?? 1)));
     <?php endforeach; ?>
   </nav>
 
+  <div class="booking-toolbar" role="group" aria-label="Szybkie akcje rezerwacji" style="margin:1rem 0;display:flex;gap:.75rem;flex-wrap:wrap">
+    <a href="/luminaphp/?page=business&amp;id=<?= htmlspecialchars($bizId, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-ghost btn-sm">
+      <span class="material-icons" aria-hidden="true">storefront</span> Profil salonu
+    </a>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="window.location.href='/luminaphp/?page=explore'">
+      <span class="material-icons" aria-hidden="true">search</span> Zmień salon
+    </button>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <span class="material-icons" aria-hidden="true">arrow_upward</span> Góra strony
+    </button>
+  </div>
+
   <div class="booking-wizard-content">
 
     <?php if ($step === 1): ?>
@@ -169,3 +181,5 @@ function selectStaff(id, name, photo) {
   goToStep(3);
 }
 </script>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

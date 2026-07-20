@@ -3,7 +3,7 @@
   <header class="features-hero lumina-page-head">
     <h1>Powiadomienia</h1>
     <p>Wszystkie alerty i przypomnienia w jednym miejscu</p>
-    <div class="notif-header-actions">
+    <div class="notif-header-actions" style="display:flex;gap:.75rem;flex-wrap:wrap">
       <button id="markAllReadBtn" class="btn btn-ghost btn-sm">
         <span class="material-icons">done_all</span> Zaznacz jako przeczytane
       </button>
@@ -12,6 +12,9 @@
       </button>
       <button id="notifPrefsBtn" class="btn btn-ghost btn-sm">
         <span class="material-icons">tune</span> Ustawienia
+      </button>
+      <button id="notifSortBtn" class="btn btn-ghost btn-sm">
+        <span class="material-icons">sort</span> Sortuj
       </button>
     </div>
   </header>
@@ -132,3 +135,5 @@
     </div>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

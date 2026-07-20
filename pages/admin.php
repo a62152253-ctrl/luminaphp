@@ -120,6 +120,11 @@
         <span class="material-icons" aria-hidden="true">download</span> CSV
       </button>
     </div>
+    <div class="biz-quick-actions" role="group" aria-label="Szybkie akcje salonu" style="margin:1rem 0;display:flex;gap:.75rem;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" type="button">Dodaj promocję</button>
+      <button class="btn btn-ghost btn-sm" type="button">Zarządzaj klientami</button>
+      <button class="btn btn-ghost btn-sm" type="button">Sprawdź cennik</button>
+    </div>
 
     <!-- ===== TAB: HOME ===== -->
     <div class="biz-tab hidden" data-btab="home">
@@ -986,3 +991,5 @@ document.addEventListener('click', e => {
   });
 });
 </script>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

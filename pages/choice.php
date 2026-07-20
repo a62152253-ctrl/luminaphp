@@ -17,6 +17,11 @@ $choiceFeatures = [
       <h1>Wybierz swoją ścieżkę</h1>
     </header>
 
+    <div class="choice-actions" role="group" aria-label="Szybkie akcje wyboru">
+      <a href="/luminaphp/?page=explore" class="btn btn-ghost">Zobacz najlepsze salony</a>
+      <a href="/luminaphp/?page=auth" class="btn btn-accent">Rozpocznij rejestrację</a>
+    </div>
+
     <div class="choice-grid" role="list">
       <a href="/luminaphp/?page=explore" class="choice-card" role="listitem">
         <div class="choice-card-icon" aria-hidden="true">
@@ -54,3 +59,5 @@ $choiceFeatures = [
     </ul>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

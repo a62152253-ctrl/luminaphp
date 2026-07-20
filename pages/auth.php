@@ -50,6 +50,11 @@
         <span id="authErrorMsg"></span>
       </div>
 
+      <div class="auth-quick-actions" role="group" aria-label="Szybkie akcje">
+        <a href="/luminaphp/?page=explore" class="btn btn-ghost">Przeglądaj jako gość</a>
+        <a href="/luminaphp/?page=home" class="btn btn-ghost">Powrót do strony głównej</a>
+      </div>
+
       <!-- ===== LOGIN PANEL ===== -->
       <div class="auth-panel active" id="panelLogin">
         <h2 class="auth-title">Witaj z powrotem</h2>
@@ -238,3 +243,5 @@ function authSelectRole(role) {
   if (typeof window.authResetPhone === 'function') window.authResetPhone();
 }
 </script>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

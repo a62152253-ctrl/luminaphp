@@ -190,6 +190,9 @@ function bindEvents() {
   document.getElementById('compareOpenBtn')?.addEventListener('click', openCompareModal);
   document.getElementById('compareClearBtn')?.addEventListener('click', clearCompare);
 
+  // Beauty SOS
+  document.getElementById('beautySosBtn')?.addEventListener('click', openSOSModal);
+
   window.toggleCompare = (bizId, e) => {
     e?.stopPropagation();
     const idx = _compareList.indexOf(bizId);
@@ -437,6 +440,91 @@ function setView(mode) {
   } else {
     destroyMap();
   }
+}
+
+// ─── BEAUTY SOS ───────────────────────────────────────────────────────────────
+
+async function openSOSModal() {
+  const btn = document.getElementById('beautySosBtn');
+  if (btn) btn.classList.add('sos-loading');
+
+  if (!_userLoc) {
+    const loc = await getUserLocation();
+    if (loc) { _userLoc = loc; }
+  }
+
+  let results = _all.filter(b => isOpenNow(b));
+
+  if (_userLoc) {
+    results = sortByDistance(results, _userLoc.lat, _userLoc.lng)
+      .filter(b => b._distance !== Infinity && b._distance <= 15);
+  }
+
+  if (btn) btn.classList.remove('sos-loading');
+
+  renderSOSModal(results);
+}
+
+function renderSOSModal(list) {
+  const modal = document.getElementById('sosModal');
+  if (!modal) return;
+
+  const distNote = _userLoc ? ' w promieniu 15 km' : '';
+
+  modal.innerHTML = `
+    <div class="sos-modal-inner" onclick="event.stopPropagation()">
+      <div class="sos-modal-head">
+        <div class="sos-modal-title-row">
+          <span class="sos-live-dot" aria-hidden="true"></span>
+          <h2 id="sosModalTitle">Beauty SOS</h2>
+        </div>
+        <p class="sos-modal-sub">
+          ${list.length
+            ? `Znaleziono <strong>${list.length}</strong> salonów otwartych teraz${distNote}`
+            : `Brak otwartych salonów${distNote}`}
+        </p>
+        <button class="sos-modal-close"
+          onclick="document.getElementById('sosModal').classList.add('hidden')"
+          aria-label="Zamknij">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="sos-modal-list">
+        ${list.length ? list.map(b => {
+          const dist = (b._distance != null && b._distance !== Infinity)
+            ? `<span class="sos-card-dist"><span class="material-icons">near_me</span>${formatDistance(b._distance)}</span>`
+            : '';
+          const rating = b.rating
+            ? `<span class="sos-card-rating"><span class="material-icons">star</span>${b.rating}</span>`
+            : '';
+          return `<div class="sos-salon-card"
+              onclick="window.location.href='?page=business&id=${b.id}'"
+              role="button" tabindex="0"
+              onkeydown="if(event.key==='Enter')window.location.href='?page=business&id=${b.id}'">
+            <img class="sos-card-img"
+              src="${esc(b.photoURL || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=120')}"
+              alt="${esc(b.name)}" loading="lazy">
+            <div class="sos-card-info">
+              <div class="sos-card-cat">${esc(b.category || '')}</div>
+              <div class="sos-card-name">${esc(b.name)}</div>
+              <div class="sos-card-meta">${esc(b.city || '')} ${dist} ${rating}</div>
+            </div>
+            <button class="sos-book-btn"
+              onclick="event.stopPropagation();window.location.href='?page=business&id=${b.id}'"
+              aria-label="Zarezerwuj w ${esc(b.name)}">
+              Zarezerwuj
+              <span class="material-icons">chevron_right</span>
+            </button>
+          </div>`;
+        }).join('') : `<div class="sos-empty">
+          <span class="material-icons">sentiment_dissatisfied</span>
+          <p>Żaden salon nie jest teraz otwarty w pobliżu.</p>
+          <p class="sos-empty-sub">Spróbuj ponownie później lub przeglądaj wszystkie salony.</p>
+        </div>`}
+      </div>
+    </div>`;
+
+  modal.classList.remove('hidden');
 }
 
 // ─── COMPARE ─────────────────────────────────────────────────────────────────

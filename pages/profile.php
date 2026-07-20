@@ -3,7 +3,7 @@
   <header class="features-hero lumina-page-head">
     <h1>Mój profil</h1>
     <p>Edytuj dane, zdjęcie i przeglądaj historię wizyt</p>
-    <div class="profile-header-actions">
+    <div class="profile-header-actions" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
       <div class="lang-switcher">
         <button data-lang-btn data-lang="pl" class="lang-btn active">PL</button>
         <button data-lang-btn data-lang="en" class="lang-btn">EN</button>
@@ -11,6 +11,12 @@
       <button id="darkModeToggle" class="btn btn-ghost btn-sm" title="Tryb ciemny / jasny">
         <span class="material-icons" id="darkModeIcon">dark_mode</span>
       </button>
+      <a href="/luminaphp/?page=loyalty" class="btn btn-ghost btn-sm">
+        <span class="material-icons">emoji_events</span> Punkty lojalnościowe
+      </a>
+      <a href="/luminaphp/?page=referral" class="btn btn-ghost btn-sm">
+        <span class="material-icons">share</span> Polecenia
+      </a>
     </div>
   </header>
 
@@ -191,3 +197,5 @@
     </div>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>

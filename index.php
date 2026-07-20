@@ -41,13 +41,15 @@ const VALID_PAGES = [
     'loyalty',
     'invoice',
     'referral',
-    'marketplace'
+    'marketplace',
+    'superadmin'
 ];
 
 const NO_FOOTER_PAGES = [
     'auth',
     'setup',
     'admin',
+    'superadmin',
     'employees',
     'services',
     'dashboard',
@@ -101,6 +103,7 @@ $titles = [
     'invoice'       => 'Płatności | Lumina',
     'referral'      => 'Polecenia | Lumina',
     'marketplace'   => 'Marketplace | Lumina',
+    'superadmin'    => 'Super Admin | Lumina',
 ];
 
 $title = $titles[$page] ?? APP_NAME;
@@ -173,6 +176,11 @@ function pageScript(string $page): ?array
         'gallery' => [
             'module' => '/js/pages/gallery-page.js',
             'init'   => 'initGalleryPage(' . json_encode($_GET['id'] ?? '') . ')'
+        ],
+
+        'superadmin' => [
+            'module' => '/js/pages/superadmin-page.js',
+            'init'   => 'initSuperadmin()'
         ],
 
         default => [

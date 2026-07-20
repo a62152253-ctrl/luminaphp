@@ -16,6 +16,11 @@
           <span class="material-icons">emoji_events</span> Top tygodnia
         </a>
       </div>
+      <div class="mkt-hero-subactions" style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" type="button">Najlepsze okazje</button>
+        <button class="btn btn-ghost btn-sm" type="button">Dziś dostępne</button>
+        <button class="btn btn-ghost btn-sm" type="button">Pokaż vouchery</button>
+      </div>
     </div>
   </section>
 
@@ -339,3 +344,5 @@
     </div>
   </div>
 </div>
+
+<?php require_once __DIR__ . '/../includes/page-ux-enhancer.php'; ?>
