@@ -1,6 +1,6 @@
 import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
+import { toast, confirmAction } from '../modules/utils.js';
 
 let _bizId     = null;
 let _employees = [];
@@ -96,17 +96,18 @@ function renderEmployees(list) {
       </div>
     </div>`).join('');
 
-  window.deleteEmployee = async (id) => {
-    if (!confirm('Usunąć pracownika?')) return;
-    try {
-      await deleteDoc(doc(db, 'businesses', _bizId, 'staff', id));
-      _employees = _employees.filter(e => e.id !== id);
-      renderEmployees(getFilteredEmployees());
-      updateStats();
-      toast('Pracownik usunięty');
-    } catch(e) {
-      toast('Błąd: ' + e.message, 'error');
-    }
+  window.deleteEmployee = (id) => {
+    confirmAction('Usunąć pracownika?', async () => {
+      try {
+        await deleteDoc(doc(db, 'businesses', _bizId, 'staff', id));
+        _employees = _employees.filter(e => e.id !== id);
+        renderEmployees(getFilteredEmployees());
+        updateStats();
+        toast('Pracownik usunięty');
+      } catch(e) {
+        toast('Błąd: ' + e.message, 'error');
+      }
+    });
   };
 }
 

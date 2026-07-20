@@ -219,6 +219,33 @@ window.toggleDarkMode = () => {
   localStorage.setItem('lumina_theme', isDark ? 'light' : 'dark');
 };
 
+function openMobileNav() {
+  const overlay = document.getElementById('mobileNavOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileNav() {
+  const overlay = document.getElementById('mobileNavOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('mobileNavOpenBtn')?.addEventListener('click', openMobileNav);
+  document.getElementById('mobileNavCloseBtn')?.addEventListener('click', closeMobileNav);
+  document.getElementById('mobileNavOverlay')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeMobileNav();
+  });
+  document.querySelectorAll('.mobile-nav-link').forEach(link => {
+    link.addEventListener('click', closeMobileNav);
+  });
+});
+
 // ===== ONLINE / OFFLINE BANNER =====
 (function initNetworkStatus() {
   function showOffline() {

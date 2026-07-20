@@ -310,8 +310,19 @@ $description = $page === 'home'
                 class="btn-icon"
                 onclick="window.toggleDarkMode?.()"
                 aria-label="Motyw"
+                type="button"
             >
                 <span class="material-icons">dark_mode</span>
+            </button>
+
+            <button
+                class="hamburger-btn"
+                id="mobileNavOpenBtn"
+                aria-label="Otwórz menu mobilne"
+                title="Menu mobilne"
+                type="button"
+            >
+                <span class="material-icons">menu</span>
             </button>
 
             <a
@@ -326,6 +337,24 @@ $description = $page === 'home'
     </div>
 
 </header>
+
+<div class="mobile-nav-overlay" id="mobileNavOverlay" aria-hidden="true">
+  <nav class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menu mobilne">
+    <div class="mobile-nav-head">
+      <div class="mobile-nav-logo">Lumina</div>
+      <button class="mobile-nav-close" id="mobileNavCloseBtn" aria-label="Zamknij menu" type="button">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="/luminaphp/?page=explore" class="mobile-nav-link <?= isActive('explore', $page) ?>">Eksploruj</a>
+      <a href="/luminaphp/?page=choice" class="mobile-nav-link <?= isActive('choice', $page) ?>">Dla Salonów</a>
+      <a href="/luminaphp/?page=map" class="mobile-nav-link <?= isActive('map', $page) ?>">Mapa</a>
+      <a href="/luminaphp/?page=offers" class="mobile-nav-link <?= isActive('offers', $page) ?>">Promocje</a>
+      <a href="/luminaphp/?page=marketplace" class="mobile-nav-link <?= isActive('marketplace', $page) ?>">Marketplace</a>
+    </div>
+  </nav>
+</div>
 
 <!-- ===================================================== -->
 <!-- MAIN -->

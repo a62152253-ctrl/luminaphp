@@ -1,6 +1,7 @@
 import { db, collection, getDocs, query, orderBy, limit,
          doc, updateDoc, deleteDoc, where }
   from '../firebase-config.js';
+import { toast } from '../modules/utils.js';
 
 // ── State ──────────────────────────────────────────────────────────────────
 let _users       = [];
@@ -298,7 +299,7 @@ window.saTogglePublish = async (bizId, isPublished) => {
     if (biz) biz.isPublished = !isPublished;
     renderBizTable(_businesses, document.getElementById('saBizSearch')?.value ?? '',
       document.querySelector('.sa-filter-btn.active[data-bfilter]')?.dataset.bfilter ?? '');
-  } catch(e) { alert('Błąd: ' + e.message); }
+  } catch(e) { toast('Błąd: ' + e.message, 'error'); }
 };
 
 window.saVerifyBiz = async (bizId, current) => {
@@ -309,7 +310,7 @@ window.saVerifyBiz = async (bizId, current) => {
     if (biz) biz.verificationStatus = next;
     renderBizTable(_businesses, document.getElementById('saBizSearch')?.value ?? '',
       document.querySelector('.sa-filter-btn.active[data-bfilter]')?.dataset.bfilter ?? '');
-  } catch(e) { alert('Błąd: ' + e.message); }
+  } catch(e) { toast('Błąd: ' + e.message, 'error'); }
 };
 
 // ── Appointments Tab ───────────────────────────────────────────────────────

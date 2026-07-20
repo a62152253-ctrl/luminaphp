@@ -1,6 +1,6 @@
 import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp }
   from '../firebase-config.js';
-import { toast } from '../modules/utils.js';
+import { toast, confirmAction } from '../modules/utils.js';
 
 let _bizId    = null;
 let _services = [];
@@ -100,17 +100,18 @@ function renderServices(list) {
       </div>
     </div>`).join('');
 
-  window.deleteService = async (id) => {
-    if (!confirm('Usunąć usługę?')) return;
-    try {
-      await deleteDoc(doc(db, 'businesses', _bizId, 'services', id));
-      _services = _services.filter(s => s.id !== id);
-      renderServices(getFilteredServices());
-      updateStats();
-      toast('Usługa usunięta');
-    } catch(e) {
-      toast('Błąd: ' + e.message, 'error');
-    }
+  window.deleteService = (id) => {
+    confirmAction('Usunąć usługę?', async () => {
+      try {
+        await deleteDoc(doc(db, 'businesses', _bizId, 'services', id));
+        _services = _services.filter(s => s.id !== id);
+        renderServices(getFilteredServices());
+        updateStats();
+        toast('Usługa usunięta');
+      } catch(e) {
+        toast('Błąd: ' + e.message, 'error');
+      }
+    });
   };
 }
 
